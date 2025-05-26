@@ -47,7 +47,7 @@ public class SessaoTesteDAO {
             System.err.println("Erro ao inserir sessão de teste: " + e.getMessage());
         } finally {
             ConexaoDB.close(rs);
-            ConexaoDB.close(stmt);
+            ConexaoDB.close((ResultSet) stmt);
             ConexaoDB.closeConnection(conn);
         }
         return idGerado;
@@ -93,7 +93,7 @@ public class SessaoTesteDAO {
             System.err.println("Erro ao buscar sessão de teste por ID: " + e.getMessage());
         } finally {
             ConexaoDB.close(rs);
-            ConexaoDB.close(stmt);
+            ConexaoDB.close((ResultSet) stmt);
             ConexaoDB.closeConnection(conn);
         }
         return sessaoTeste;
@@ -124,7 +124,7 @@ public class SessaoTesteDAO {
             System.err.println("Erro ao atualizar sessão de teste: " + e.getMessage());
             return false;
         } finally {
-            ConexaoDB.close(stmt);
+            ConexaoDB.close((ResultSet) stmt);
             ConexaoDB.closeConnection(conn);
         }
     }
@@ -146,7 +146,7 @@ public class SessaoTesteDAO {
             System.err.println("Erro ao iniciar sessão: " + e.getMessage());
             return false;
         } finally {
-            ConexaoDB.close(stmt);
+            ConexaoDB.close((ResultSet) stmt);
             ConexaoDB.closeConnection(conn);
         }
     }
@@ -167,7 +167,7 @@ public class SessaoTesteDAO {
             System.err.println("Erro ao finalizar sessão: " + e.getMessage());
             return false;
         } finally {
-            ConexaoDB.close(stmt);
+            ConexaoDB.close((ResultSet) stmt);
             ConexaoDB.closeConnection(conn);
         }
     }
@@ -186,7 +186,7 @@ public class SessaoTesteDAO {
             System.err.println("Erro ao excluir sessão de teste: " + e.getMessage());
             return false;
         } finally {
-            ConexaoDB.close(stmt);
+            ConexaoDB.close((ResultSet) stmt);
             ConexaoDB.closeConnection(conn);
         }
     }
@@ -270,7 +270,7 @@ public class SessaoTesteDAO {
             System.err.println("Erro ao listar sessões por projeto: " + e.getMessage());
         } finally {
             ConexaoDB.close(rs);
-            ConexaoDB.close(stmt);
+            ConexaoDB.close((ResultSet) stmt);
             ConexaoDB.closeConnection(conn);
         }
         return sessoes;
@@ -315,7 +315,7 @@ public class SessaoTesteDAO {
             System.err.println("Erro ao listar todas as sessões: " + e.getMessage());
         } finally {
             ConexaoDB.close(rs);
-            ConexaoDB.close(stmt);
+            ConexaoDB.close((ResultSet) stmt);
             ConexaoDB.closeConnection(conn);
         }
         return sessoes;

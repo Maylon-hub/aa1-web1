@@ -198,14 +198,26 @@ public class UsuarioDAO {
         UsuarioDAO dao = new UsuarioDAO();
 
         // 1. Testar Inserção
-        Usuario novoUsuario = new Usuario();
-        novoUsuario.setNome("Admin Teste");
-        novoUsuario.setEmail("admin@test.com");
-        novoUsuario.setSenha("senha123"); // Em produção, hash a senha!
-        novoUsuario.setTipoPerfil("ADMINISTRADOR");
+        Usuario novoAdmin = new Usuario();
+        novoAdmin.setNome("Admin Teste");
+        novoAdmin.setEmail("admin@test.com");
+        novoAdmin.setSenha("admin"); // Em produção, hash a senha!
+        novoAdmin.setTipoPerfil("ADMINISTRADOR");
 
-        if (dao.inserirUsuario(novoUsuario)) {
-            System.out.println("Usuário inserido com sucesso!");
+        if (dao.inserirUsuario(novoAdmin)) {
+            System.out.println("Admin inserido com sucesso!");
+        } else {
+            System.out.println("Falha ao inserir usuário admin.");
+        }
+
+        Usuario novoTestador = new Usuario();
+        novoTestador.setNome("Admin Teste");
+        novoTestador.setEmail("tester@test.com");
+        novoTestador.setSenha("tester"); // Em produção, hash a senha!
+        novoTestador.setTipoPerfil("TESTADOR");
+
+        if (dao.inserirUsuario(novoTestador)) {
+            System.out.println("Testador inserido com sucesso!");
         } else {
             System.out.println("Falha ao inserir usuário.");
         }

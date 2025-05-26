@@ -39,7 +39,7 @@ public class EstrategiaDAO {
             System.err.println("Erro ao inserir estratégia: " + e.getMessage());
         } finally {
             ConexaoDB.close(rs);
-            ConexaoDB.close(stmt);
+            ConexaoDB.close((ResultSet) stmt);
             ConexaoDB.closeConnection(conn);
         }
         return idGerado;
@@ -68,7 +68,7 @@ public class EstrategiaDAO {
             System.err.println("Erro ao buscar estratégia por ID: " + e.getMessage());
         } finally {
             ConexaoDB.close(rs);
-            ConexaoDB.close(stmt);
+            ConexaoDB.close((ResultSet) stmt);
             ConexaoDB.closeConnection(conn);
         }
         return estrategia;
@@ -92,7 +92,7 @@ public class EstrategiaDAO {
             System.err.println("Erro ao atualizar estratégia: " + e.getMessage());
             return false;
         } finally {
-            ConexaoDB.close(stmt);
+            ConexaoDB.close((ResultSet) stmt);
             ConexaoDB.closeConnection(conn);
         }
     }
@@ -112,7 +112,7 @@ public class EstrategiaDAO {
             // Tratar ConstraintViolationException (se a estratégia estiver em uso por uma sessão de teste)
             return false;
         } finally {
-            ConexaoDB.close(stmt);
+            ConexaoDB.close((ResultSet) stmt);
             ConexaoDB.closeConnection(conn);
         }
     }
@@ -140,7 +140,7 @@ public class EstrategiaDAO {
             System.err.println("Erro ao listar estratégias: " + e.getMessage());
         } finally {
             ConexaoDB.close(rs);
-            ConexaoDB.close(stmt);
+            ConexaoDB.close((ResultSet) stmt);
             ConexaoDB.closeConnection(conn);
         }
         return estrategias;
