@@ -13,22 +13,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Cadastrar Nova Estratégia</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f9f9f9; color: #333; }
-        .container { width: 70%; margin: 20px auto; background-color: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #0056b3; margin-bottom: 20px;}
-        label { display: block; margin-top: 15px; margin-bottom: 5px; font-weight: bold; }
-        input[type="text"], textarea { width: calc(100% - 22px); padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        textarea { resize: vertical; min-height: 100px; }
-        button[type="submit"] { padding: 12px 20px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; transition: background-color 0.2s; }
-        button[type="submit"]:hover { background-color: #218838; }
-        .message { padding: 10px; margin-bottom: 15px; border-radius: 4px; text-align: center; }
-        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .navigation-links { margin-top: 25px; text-align: center; }
-        .navigation-links a { margin: 0 10px; text-decoration: none; color: #007bff; }
-        .navigation-links a:hover { text-decoration: underline; }
-    </style>
+    <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/estiloPrincipal.css">
 </head>
 <body>
 <div class="container">
