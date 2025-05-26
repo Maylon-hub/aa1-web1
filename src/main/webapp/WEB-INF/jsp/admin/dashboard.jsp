@@ -29,10 +29,17 @@
 
 <h2>Funcionalidades do Administrador:</h2>
 <ul>
-    <li><a href="${pageContext.request.contextPath}/admin/gerenciarUsuarios">Gerenciar Usuários</a> (CRUD Testadores, CRUD Administradores - R1, R2)</li>
-    <li><a href="${pageContext.request.contextPath}/admin/gerenciarProjetos">Gerenciar Projetos</a> (Cadastro de Projetos - R3)</li>
-    <li><a href="${pageContext.request.contextPath}/admin/gerenciarEstrategias">Gerenciar Estratégias</a> (Cadastro de Estratégias - R5)</li>
-    <li>Visualizar/Editar/Excluir Sessões de Teste (parte do R9 para admin)</li>
+    <li><a href="${pageContext.request.contextPath}/admin/gerenciarUsuarios">Gerenciar Usuários</a> (R1, R2)</li>
+    <li><a href="${pageContext.request.contextPath}/admin/gerenciarProjetos">Gerenciar Projetos</a> (R3)</li>
+    <li>
+        Gerenciar Estratégias (R5):
+        <ul>
+            <li><a href="${pageContext.request.contextPath}/admin/cadastrarEstrategia">Cadastrar Nova Estratégia</a></li>
+            <li><a href="${pageContext.request.contextPath}/estrategias">Listar Todas as Estratégias</a></li>
+            <%-- Futuramente: Editar/Excluir Estratégias --%>
+        </ul>
+    </li>
+    <li>Visualizar/Editar/Excluir Sessões de Teste (R9)</li>
 </ul>
 
 </body>

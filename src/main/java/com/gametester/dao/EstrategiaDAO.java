@@ -7,14 +7,14 @@ import com.gametester.util.ConexaoDB;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.SQLException; // Ensure this is imported
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
 public class EstrategiaDAO {
 
-    public int inserirEstrategia(Estrategia estrategia) {
+    public int inserirEstrategia(Estrategia estrategia) throws SQLException { // Add 'throws SQLException'
         String sql = "INSERT INTO Estrategia (nome, descricao, exemplos, dicas) VALUES (?, ?, ?, ?) RETURNING id";
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -33,19 +33,33 @@ public class EstrategiaDAO {
                 rs = stmt.getGeneratedKeys();
                 if (rs.next()) {
                     idGerado = rs.getInt(1);
+                    estrategia.setId(idGerado); // Set the ID back to the object
                 }
             }
         } catch (SQLException e) {
             System.err.println("Erro ao inserir estratégia: " + e.getMessage());
+            throw e; // Re-throw the exception
         } finally {
             ConexaoDB.close(rs);
-            ConexaoDB.close((ResultSet) stmt);
+            // Corrected closing of PreparedStatement:
+            // Assuming ConexaoDB.close() can handle PreparedStatement or has an overload.
+            // If not, you might need a specific ConexaoDB.closeStatement(stmt) method.
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException e) {
+                    System.err.println("Erro ao fechar PreparedStatement: " + e.getMessage());
+                }
+            }
             ConexaoDB.closeConnection(conn);
         }
         return idGerado;
     }
 
-    public Estrategia buscarEstrategiaPorId(int id) {
+    // You should apply similar changes (throws SQLException and re-throwing)
+    // to other methods like buscarEstrategiaPorId, atualizarEstrategia, etc.
+    // For example:
+    public Estrategia buscarEstrategiaPorId(int id) throws SQLException {
         String sql = "SELECT id, nome, descricao, exemplos, dicas FROM Estrategia WHERE id = ?";
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -66,15 +80,22 @@ public class EstrategiaDAO {
             }
         } catch (SQLException e) {
             System.err.println("Erro ao buscar estratégia por ID: " + e.getMessage());
+            throw e; // Re-throw
         } finally {
             ConexaoDB.close(rs);
-            ConexaoDB.close((ResultSet) stmt);
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException e) {
+                    System.err.println("Erro ao fechar PreparedStatement: " + e.getMessage());
+                }
+            }
             ConexaoDB.closeConnection(conn);
         }
         return estrategia;
     }
 
-    public boolean atualizarEstrategia(Estrategia estrategia) {
+    public boolean atualizarEstrategia(Estrategia estrategia) throws SQLException {
         String sql = "UPDATE Estrategia SET nome = ?, descricao = ?, exemplos = ?, dicas = ? WHERE id = ?";
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -90,14 +111,20 @@ public class EstrategiaDAO {
             return rowsAffected > 0;
         } catch (SQLException e) {
             System.err.println("Erro ao atualizar estratégia: " + e.getMessage());
-            return false;
+            throw e; // Re-throw
         } finally {
-            ConexaoDB.close((ResultSet) stmt);
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException e) {
+                    System.err.println("Erro ao fechar PreparedStatement: " + e.getMessage());
+                }
+            }
             ConexaoDB.closeConnection(conn);
         }
     }
 
-    public boolean excluirEstrategia(int id) {
+    public boolean excluirEstrategia(int id) throws SQLException {
         String sql = "DELETE FROM Estrategia WHERE id = ?";
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -109,15 +136,20 @@ public class EstrategiaDAO {
             return rowsAffected > 0;
         } catch (SQLException e) {
             System.err.println("Erro ao excluir estratégia: " + e.getMessage());
-            // Tratar ConstraintViolationException (se a estratégia estiver em uso por uma sessão de teste)
-            return false;
+            throw e; // Re-throw
         } finally {
-            ConexaoDB.close((ResultSet) stmt);
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException e) {
+                    System.err.println("Erro ao fechar PreparedStatement: " + e.getMessage());
+                }
+            }
             ConexaoDB.closeConnection(conn);
         }
     }
 
-    public List<Estrategia> listarTodasEstrategias() {
+    public List<Estrategia> listarTodasEstrategias() throws SQLException {
         String sql = "SELECT id, nome, descricao, exemplos, dicas FROM Estrategia ORDER BY nome ASC";
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -138,83 +170,95 @@ public class EstrategiaDAO {
             }
         } catch (SQLException e) {
             System.err.println("Erro ao listar estratégias: " + e.getMessage());
+            throw e; // Re-throw
         } finally {
             ConexaoDB.close(rs);
-            ConexaoDB.close((ResultSet) stmt);
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException e) {
+                    System.err.println("Erro ao fechar PreparedStatement: " + e.getMessage());
+                }
+            }
             ConexaoDB.closeConnection(conn);
         }
         return estrategias;
     }
-
-    // Métodos para Estrategia_Imagem (se necessário)
-    // public boolean adicionarImagemEstrategia(int estrategiaId, String urlImagem) { ... }
-    // public List<String> buscarImagensEstrategia(int estrategiaId) { ... }
-
+    // ... (rest of the DAO class, main method for testing can remain as is or adapt to new throws)
+    // Note: The main method will need to handle or declare SQLException if you call these modified methods.
     public static void main(String[] args) {
         EstrategiaDAO estrategiaDAO = new EstrategiaDAO();
 
         // --- Teste de Inserção ---
         System.out.println("--- Teste de Inserção de Estratégia ---");
         Estrategia novaEstrategia = new Estrategia();
-        novaEstrategia.setNome("Estratégia de Empatia");
-        novaEstrategia.setDescricao("Testar o jogo do ponto de vista de um jogador iniciante.");
-        novaEstrategia.setExemplos("Exemplo: 'Como um jogador que nunca jogou isso reagiria ao tutorial?'");
-        novaEstrategia.setDicas("Dica: Evite pular diálogos ou instruções iniciais.");
+        novaEstrategia.setNome("Estratégia de Empatia Teste DAO");
+        novaEstrategia.setDescricao("Testar o jogo do ponto de vista de um jogador iniciante, via DAO test.");
+        novaEstrategia.setExemplos("Exemplo DAO: 'Como um jogador que nunca jogou isso reagiria ao tutorial?'");
+        novaEstrategia.setDicas("Dica DAO: Evite pular diálogos ou instruções iniciais.");
 
-        int idEstrategiaInserida = estrategiaDAO.inserirEstrategia(novaEstrategia);
-        if (idEstrategiaInserida != -1) {
-            System.out.println("Estratégia inserida com sucesso! ID: " + idEstrategiaInserida);
-            novaEstrategia.setId(idEstrategiaInserida); // Atualiza o ID do objeto
-        } else {
-            System.out.println("Falha ao inserir estratégia.");
-        }
-
-        // --- Teste de Busca por ID ---
-        System.out.println("\n--- Teste de Busca de Estratégia por ID ---");
-        Estrategia estrategiaBuscada = estrategiaDAO.buscarEstrategiaPorId(novaEstrategia.getId());
-        if (estrategiaBuscada != null) {
-            System.out.println("Estratégia encontrada: " + estrategiaBuscada.getNome());
-            System.out.println("Descrição: " + estrategiaBuscada.getDescricao());
-        } else {
-            System.out.println("Estratégia com ID " + novaEstrategia.getId() + " não encontrada.");
-        }
-
-        // --- Teste de Atualização ---
-        System.out.println("\n--- Teste de Atualização de Estratégia ---");
-        if (estrategiaBuscada != null) {
-            estrategiaBuscada.setNome("Estratégia de Empatia (Revisada)");
-            estrategiaBuscada.setDicas("Dica: Preste atenção nos sinais visuais e sonoros.");
-            if (estrategiaDAO.atualizarEstrategia(estrategiaBuscada)) {
-                System.out.println("Estratégia atualizada com sucesso!");
-                Estrategia estrategiaAtualizada = estrategiaDAO.buscarEstrategiaPorId(estrategiaBuscada.getId());
-                System.out.println("Nome atualizado: " + estrategiaAtualizada.getNome());
-                System.out.println("Dicas atualizadas: " + estrategiaAtualizada.getDicas());
+        try {
+            int idEstrategiaInserida = estrategiaDAO.inserirEstrategia(novaEstrategia);
+            if (idEstrategiaInserida != -1) {
+                System.out.println("Estratégia inserida com sucesso! ID: " + idEstrategiaInserida);
+                // novaEstrategia.setId(idEstrategiaInserida); // ID is set inside inserirEstrategia now
             } else {
-                System.out.println("Falha ao atualizar estratégia.");
+                System.out.println("Falha ao inserir estratégia (ID -1 retornado).");
             }
-        }
 
-        // --- Teste de Listagem ---
-        System.out.println("\n--- Teste de Listagem de Estratégias ---");
-        List<Estrategia> todasEstrategias = estrategiaDAO.listarTodasEstrategias();
-        if (!todasEstrategias.isEmpty()) {
-            System.out.println("Estratégias no sistema:");
-            for (Estrategia e : todasEstrategias) {
-                System.out.println("ID: " + e.getId() + ", Nome: " + e.getNome());
+            // --- Teste de Busca por ID ---
+            if (novaEstrategia.getId() > 0) { // Check if ID was set
+                System.out.println("\n--- Teste de Busca de Estratégia por ID ---");
+                Estrategia estrategiaBuscada = estrategiaDAO.buscarEstrategiaPorId(novaEstrategia.getId());
+                if (estrategiaBuscada != null) {
+                    System.out.println("Estratégia encontrada: " + estrategiaBuscada.getNome());
+                    System.out.println("Descrição: " + estrategiaBuscada.getDescricao());
+
+                    // --- Teste de Atualização ---
+                    System.out.println("\n--- Teste de Atualização de Estratégia ---");
+                    estrategiaBuscada.setNome("Estratégia de Empatia (Revisada DAO)");
+                    estrategiaBuscada.setDicas("Dica DAO: Preste atenção nos sinais visuais e sonoros.");
+                    if (estrategiaDAO.atualizarEstrategia(estrategiaBuscada)) {
+                        System.out.println("Estratégia atualizada com sucesso!");
+                        Estrategia estrategiaAtualizada = estrategiaDAO.buscarEstrategiaPorId(estrategiaBuscada.getId());
+                        if(estrategiaAtualizada != null) {
+                            System.out.println("Nome atualizado: " + estrategiaAtualizada.getNome());
+                            System.out.println("Dicas atualizadas: " + estrategiaAtualizada.getDicas());
+                        }
+                    } else {
+                        System.out.println("Falha ao atualizar estratégia.");
+                    }
+                } else {
+                    System.out.println("Estratégia com ID " + novaEstrategia.getId() + " não encontrada.");
+                }
             }
-        } else {
-            System.out.println("Nenhuma estratégia cadastrada.");
-        }
 
-        // --- Teste de Exclusão (CUIDADO!) ---
-        // Descomente e use com cautela. Se uma sessão de teste usar esta estratégia, a exclusão falhará.
-        // if (idEstrategiaInserida != -1) {
-        //     System.out.println("\n--- Teste de Exclusão de Estratégia ---");
-        //     if (estrategiaDAO.excluirEstrategia(idEstrategiaInserida)) {
-        //         System.out.println("Estratégia com ID " + idEstrategiaInserida + " excluída com sucesso!");
-        //     } else {
-        //         System.out.println("Falha ao excluir estratégia com ID " + idEstrategiaInserida + " (pode estar em uso).");
-        //     }
-        // }
+
+            // --- Teste de Listagem ---
+            System.out.println("\n--- Teste de Listagem de Estratégias ---");
+            List<Estrategia> todasEstrategias = estrategiaDAO.listarTodasEstrategias();
+            if (!todasEstrategias.isEmpty()) {
+                System.out.println("Estratégias no sistema:");
+                for (Estrategia e : todasEstrategias) {
+                    System.out.println("ID: " + e.getId() + ", Nome: " + e.getNome());
+                }
+            } else {
+                System.out.println("Nenhuma estratégia cadastrada.");
+            }
+
+            // --- Teste de Exclusão (CUIDADO!) ---
+            // if (novaEstrategia.getId() > 0) {
+            //     System.out.println("\n--- Teste de Exclusão de Estratégia ---");
+            //     if (estrategiaDAO.excluirEstrategia(novaEstrategia.getId())) {
+            //         System.out.println("Estratégia com ID " + novaEstrategia.getId() + " excluída com sucesso!");
+            //     } else {
+            //         System.out.println("Falha ao excluir estratégia com ID " + novaEstrategia.getId() + " (pode estar em uso).");
+            //     }
+            // }
+
+        } catch (SQLException e) {
+            System.err.println("Erro no método main do DAO durante teste: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }

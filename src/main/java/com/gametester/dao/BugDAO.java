@@ -15,7 +15,7 @@ import java.util.List;
 
 public class BugDAO {
 
-    public int inserirBug(Bug bug) {
+    public int inserirBug(Bug bug) throws SQLException {
         String sql = "INSERT INTO Bug (sessao_teste_id, descricao, severidade, screenshot_url) VALUES (?, ?, ?, ?) RETURNING id";
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -35,19 +35,27 @@ public class BugDAO {
                 rs = stmt.getGeneratedKeys();
                 if (rs.next()) {
                     idGerado = rs.getInt(1);
+                    bug.setId(idGerado); // Set ID on the bug object
                 }
             }
         } catch (SQLException e) {
             System.err.println("Erro ao inserir bug: " + e.getMessage());
+            throw e; // Re-throw
         } finally {
             ConexaoDB.close(rs);
-            ConexaoDB.close((ResultSet) stmt);
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException e) {
+                    System.err.println("Erro ao fechar PreparedStatement: " + e.getMessage());
+                }
+            }
             ConexaoDB.closeConnection(conn);
         }
         return idGerado;
     }
 
-    public Bug buscarBugPorId(int id) {
+    public Bug buscarBugPorId(int id) throws SQLException {
         String sql = "SELECT id, sessao_teste_id, descricao, severidade, data_registro, screenshot_url FROM Bug WHERE id = ?";
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -69,15 +77,22 @@ public class BugDAO {
             }
         } catch (SQLException e) {
             System.err.println("Erro ao buscar bug por ID: " + e.getMessage());
+            throw e; // Re-throw
         } finally {
             ConexaoDB.close(rs);
-            ConexaoDB.close((ResultSet) stmt);
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException e) {
+                    System.err.println("Erro ao fechar PreparedStatement: " + e.getMessage());
+                }
+            }
             ConexaoDB.closeConnection(conn);
         }
         return bug;
     }
 
-    public boolean atualizarBug(Bug bug) {
+    public boolean atualizarBug(Bug bug) throws SQLException {
         String sql = "UPDATE Bug SET sessao_teste_id = ?, descricao = ?, severidade = ?, screenshot_url = ? WHERE id = ?";
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -93,14 +108,20 @@ public class BugDAO {
             return rowsAffected > 0;
         } catch (SQLException e) {
             System.err.println("Erro ao atualizar bug: " + e.getMessage());
-            return false;
+            throw e; // Re-throw
         } finally {
-            ConexaoDB.close((ResultSet) stmt);
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException e) {
+                    System.err.println("Erro ao fechar PreparedStatement: " + e.getMessage());
+                }
+            }
             ConexaoDB.closeConnection(conn);
         }
     }
 
-    public boolean excluirBug(int id) {
+    public boolean excluirBug(int id) throws SQLException {
         String sql = "DELETE FROM Bug WHERE id = ?";
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -112,14 +133,20 @@ public class BugDAO {
             return rowsAffected > 0;
         } catch (SQLException e) {
             System.err.println("Erro ao excluir bug: " + e.getMessage());
-            return false;
+            throw e; // Re-throw
         } finally {
-            ConexaoDB.close((ResultSet) stmt);
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException e) {
+                    System.err.println("Erro ao fechar PreparedStatement: " + e.getMessage());
+                }
+            }
             ConexaoDB.closeConnection(conn);
         }
     }
 
-    public List<Bug> listarBugsPorSessaoTeste(int sessaoTesteId) {
+    public List<Bug> listarBugsPorSessaoTeste(int sessaoTesteId) throws SQLException {
         String sql = "SELECT id, sessao_teste_id, descricao, severidade, data_registro, screenshot_url FROM Bug WHERE sessao_teste_id = ? ORDER BY data_registro ASC";
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -142,153 +169,210 @@ public class BugDAO {
             }
         } catch (SQLException e) {
             System.err.println("Erro ao listar bugs por sessão de teste: " + e.getMessage());
+            throw e; // Re-throw
         } finally {
             ConexaoDB.close(rs);
-            ConexaoDB.close((ResultSet) stmt);
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException e) {
+                    System.err.println("Erro ao fechar PreparedStatement: " + e.getMessage());
+                }
+            }
             ConexaoDB.closeConnection(conn);
         }
         return bugs;
     }
 
-    public static void main(String[] args) {
+    // Corrected main method
+    public static void main(String[] args) { // Removed "throws SQLException" to handle internally
         BugDAO bugDAO = new BugDAO();
+        // It's better if DAO main methods don't depend on other DAOs directly for their core testing,
+        // or if they do, those DAOs should also be robust or mocked.
+        // For now, we assume these DAOs will also be updated to throw SQLException from their methods.
         SessaoTesteDAO sessaoTesteDAO = new SessaoTesteDAO();
         ProjetoDAO projetoDAO = new ProjetoDAO();
         UsuarioDAO usuarioDAO = new UsuarioDAO();
         EstrategiaDAO estrategiaDAO = new EstrategiaDAO();
 
-        // --- Pré-requisito: Criar uma Sessão de Teste ---
-        System.out.println("--- Criando pré-requisito para Bug ---");
-        // Criar projeto, testador e estratégia para a sessão
-        Projeto projetoBug = new Projeto(0, "Projeto Bugs", "Projeto para testar bugs", new Timestamp(System.currentTimeMillis()));
-        int idProjetoBug = projetoDAO.inserirProjeto(projetoBug);
-        projetoBug.setId(idProjetoBug);
+        System.out.println("--- Iniciando Testes para BugDAO ---");
+        Projeto projetoBug = null;
+        Usuario testadorBug = null;
+        Estrategia estrategiaBug = null;
+        SessaoTeste sessaoParaBug = null;
+        int idBugInserido = -1;
+        int idSessaoParaBug = -1;
 
-        Usuario testadorBug = new Usuario(0, "Testador Bug", "bugtester@email.com", "senha", "TESTADOR");
-        if (usuarioDAO.buscarUsuarioPorEmail(testadorBug.getEmail()) == null) {
-            usuarioDAO.inserirUsuario(testadorBug);
-            testadorBug = usuarioDAO.buscarUsuarioPorEmail(testadorBug.getEmail());
-        } else {
-            testadorBug = usuarioDAO.buscarUsuarioPorEmail(testadorBug.getEmail());
-        }
+        try {
+            System.out.println("--- Criando pré-requisitos para Bug ---");
 
-        Estrategia estrategiaBug = new Estrategia(0, "Estrategia Bugs", "Estratégia para bugs", "...", "...");
-        int idEstrategiaBug = estrategiaDAO.inserirEstrategia(estrategiaBug);
-        estrategiaBug.setId(idEstrategiaBug);
+            // 1. Criar Projeto
+            projetoBug = new Projeto(0, "Projeto Bugs T", "Projeto para testar bugs", new Timestamp(System.currentTimeMillis()));
+            int idProjetoBug = projetoDAO.inserirProjeto(projetoBug); // Assumes throws SQLException
+            projetoBug.setId(idProjetoBug);
+            System.out.println("Projeto de bug criado com ID: " + idProjetoBug);
 
-        SessaoTeste sessaoParaBug = new SessaoTeste();
-        sessaoParaBug.setProjetoId(projetoBug.getId());
-        sessaoParaBug.setTestadorId(testadorBug.getId());
-        sessaoParaBug.setEstrategiaId(estrategiaBug.getId());
-        sessaoParaBug.setTempoSessaoMinutos(30);
-        sessaoParaBug.setDescricao("Sessão para registrar bugs.");
-        sessaoParaBug.setStatus("EM_EXECUCAO"); // Deve estar em execução para registrar bugs
-        sessaoParaBug.setDataHoraCriacao(new Timestamp(System.currentTimeMillis()));
-        sessaoParaBug.setDataHoraInicio(new Timestamp(System.currentTimeMillis()));
-
-        int idSessaoParaBug = sessaoTesteDAO.inserirSessaoTeste(sessaoParaBug);
-        if (idSessaoParaBug != -1) {
-            System.out.println("Sessão para bug criada com ID: " + idSessaoParaBug);
-            sessaoParaBug.setId(idSessaoParaBug);
-            // Iniciar a sessão após a criação
-            sessaoTesteDAO.iniciarSessao(idSessaoParaBug);
-        } else {
-            System.out.println("Falha ao criar sessão para bug. Saindo do teste.");
-            return;
-        }
-
-        // --- Teste de Inserção de Bug ---
-        System.out.println("\n--- Teste de Inserção de Bug ---");
-        Bug novoBug = new Bug();
-        novoBug.setSessaoTesteId(sessaoParaBug.getId());
-        novoBug.setDescricao("Personagem atravessa parede na fase 1.");
-        novoBug.setSeveridade("ALTA");
-        novoBug.setScreenshotUrl("http://example.com/screenshot1.png");
-
-        int idBugInserido = bugDAO.inserirBug(novoBug);
-        if (idBugInserido != -1) {
-            System.out.println("Bug inserido com sucesso! ID: " + idBugInserido);
-            novoBug.setId(idBugInserido); // Atualiza o ID
-        } else {
-            System.out.println("Falha ao inserir bug.");
-        }
-
-        // Inserir outro bug
-        Bug outroBug = new Bug();
-        outroBug.setSessaoTesteId(sessaoParaBug.getId());
-        outroBug.setDescricao("Texto incorreto em item de inventário.");
-        outroBug.setSeveridade("MEDIA");
-        outroBug.setScreenshotUrl("http://example.com/screenshot2.png");
-        bugDAO.inserirBug(outroBug);
-
-        // --- Teste de Busca por ID ---
-        System.out.println("\n--- Teste de Busca de Bug por ID ---");
-        Bug bugBuscado = bugDAO.buscarBugPorId(novoBug.getId());
-        if (bugBuscado != null) {
-            System.out.println("Bug encontrado: ID " + bugBuscado.getId());
-            System.out.println("Descrição: " + bugBuscado.getDescricao());
-            System.out.println("Severidade: " + bugBuscado.getSeveridade());
-            System.out.println("URL Screenshot: " + bugBuscado.getScreenshotUrl());
-        } else {
-            System.out.println("Bug com ID " + novoBug.getId() + " não encontrado.");
-        }
-
-        // --- Teste de Atualização ---
-        System.out.println("\n--- Teste de Atualização de Bug ---");
-        if (bugBuscado != null) {
-            bugBuscado.setDescricao("Personagem atravessa parede na fase 1 (corrigir colisão).");
-            bugBuscado.setSeveridade("BAIXA"); // Mudando a severidade
-            if (bugDAO.atualizarBug(bugBuscado)) {
-                System.out.println("Bug atualizado com sucesso!");
-                Bug bugAtualizado = bugDAO.buscarBugPorId(bugBuscado.getId());
-                System.out.println("Nova Descrição: " + bugAtualizado.getDescricao());
-                System.out.println("Nova Severidade: " + bugAtualizado.getSeveridade());
+            // 2. Criar/Obter Usuário (Testador)
+            testadorBug = new Usuario(0, "Testador Bug Main", "bugtestermain@email.com", "senha", "TESTADOR");
+            Usuario existingUser = usuarioDAO.buscarUsuarioPorEmail(testadorBug.getEmail()); // Assumes throws SQLException
+            if (existingUser == null) {
+                usuarioDAO.inserirUsuario(testadorBug); // Assumes throws SQLException
+                testadorBug = usuarioDAO.buscarUsuarioPorEmail(testadorBug.getEmail());
             } else {
-                System.out.println("Falha ao atualizar bug.");
+                testadorBug = existingUser;
             }
-        }
+            if (testadorBug == null || testadorBug.getId() == 0) throw new SQLException("Falha ao criar/obter testador.");
+            System.out.println("Testador para bug obtido/criado com ID: " + testadorBug.getId());
 
-        // --- Teste de Listagem de Bugs por Sessão ---
-        System.out.println("\n--- Teste de Listagem de Bugs por Sessão de Teste ---");
-        List<Bug> bugsDaSessao = bugDAO.listarBugsPorSessaoTeste(sessaoParaBug.getId());
-        if (!bugsDaSessao.isEmpty()) {
-            System.out.println("Bugs da Sessão ID " + sessaoParaBug.getId() + ":");
-            for (Bug b : bugsDaSessao) {
-                System.out.println("ID: " + b.getId() + ", Descrição: " + b.getDescricao() + ", Severidade: " + b.getSeveridade());
+            // 3. Criar Estratégia
+            estrategiaBug = new Estrategia(0, "Estrategia Bugs Main", "Estratégia para bugs no main", "Exemplos...", "Dicas...");
+            int idEstrategiaBug = estrategiaDAO.inserirEstrategia(estrategiaBug); // THIS throws SQLException
+            estrategiaBug.setId(idEstrategiaBug);
+            System.out.println("Estratégia de bug criada com ID: " + idEstrategiaBug);
+
+            // 4. Criar SessaoTeste
+            sessaoParaBug = new SessaoTeste();
+            sessaoParaBug.setProjetoId(projetoBug.getId());
+            sessaoParaBug.setTestadorId(testadorBug.getId());
+            sessaoParaBug.setEstrategiaId(estrategiaBug.getId());
+            sessaoParaBug.setTempoSessaoMinutos(30);
+            sessaoParaBug.setDescricao("Sessão para registrar bugs (main).");
+            sessaoParaBug.setStatus("CRIADO");
+            sessaoParaBug.setDataHoraCriacao(new Timestamp(System.currentTimeMillis()));
+
+            idSessaoParaBug = sessaoTesteDAO.inserirSessaoTeste(sessaoParaBug); // Assumes throws SQLException
+            if (idSessaoParaBug == -1) throw new SQLException("Falha ao criar sessão de teste.");
+            sessaoParaBug.setId(idSessaoParaBug);
+            System.out.println("Sessão para bug criada com ID: " + idSessaoParaBug);
+
+            sessaoTesteDAO.iniciarSessao(idSessaoParaBug); // Assumes throws SQLException
+            System.out.println("Sessão para bug iniciada.");
+
+            // --- Teste de Inserção de Bug ---
+            System.out.println("\n--- Teste de Inserção de Bug ---");
+            Bug novoBug = new Bug();
+            novoBug.setSessaoTesteId(sessaoParaBug.getId());
+            novoBug.setDescricao("Personagem atravessa parede na fase 1 (main).");
+            novoBug.setSeveridade("ALTA");
+            novoBug.setScreenshotUrl("http://example.com/screenshot1_main.png");
+
+            idBugInserido = bugDAO.inserirBug(novoBug); // This method now throws SQLException
+            if (idBugInserido != -1) {
+                System.out.println("Bug inserido com sucesso! ID: " + novoBug.getId()); // Use novoBug.getId()
+            } else {
+                System.out.println("Falha ao inserir bug (ID -1 retornado, mas exceção deveria ter ocorrido).");
             }
-        } else {
-            System.out.println("Nenhum bug encontrado para esta sessão.");
-        }
 
-        // --- Teste de Exclusão (CUIDADO!) ---
-        // Descomente e use com cautela.
-        // if (idBugInserido != -1) {
-        //     System.out.println("\n--- Teste de Exclusão de Bug ---");
-        //     if (bugDAO.excluirBug(idBugInserido)) {
-        //         System.out.println("Bug com ID " + idBugInserido + " excluído com sucesso!");
-        //     } else {
-        //         System.out.println("Falha ao excluir bug com ID " + idBugInserido);
-        //     }
-        // }
+            // Inserir outro bug
+            Bug outroBug = new Bug();
+            outroBug.setSessaoTesteId(sessaoParaBug.getId());
+            outroBug.setDescricao("Texto incorreto em item de inventário (main).");
+            outroBug.setSeveridade("MEDIA");
+            outroBug.setScreenshotUrl("http://example.com/screenshot2_main.png");
+            bugDAO.inserirBug(outroBug);
+            System.out.println("Outro bug inserido com ID: " + outroBug.getId());
 
-        // --- Limpeza dos pré-requisitos (Opcional, com cautela) ---
-        System.out.println("\n--- Limpando pré-requisitos ---");
-        // Finaliza a sessão antes de tentar excluir.
-        sessaoTesteDAO.finalizarSessao(idSessaoParaBug);
 
-        // Exclua a sessão de teste (que por CASCADE deve excluir os bugs associados, se configurado)
-        if (idSessaoParaBug != -1 && sessaoTesteDAO.excluirSessaoTeste(idSessaoParaBug)) {
-            System.out.println("Sessão de Teste removida.");
-        }
-        if (idProjetoBug != -1 && projetoDAO.excluirProjeto(idProjetoBug)) {
-            System.out.println("Projeto removido.");
-        }
-        if (testadorBug != null && usuarioDAO.excluirUsuario(testadorBug.getId())) {
-            System.out.println("Testador de Bug removido.");
-        }
-        if (idEstrategiaBug != -1 && estrategiaDAO.excluirEstrategia(idEstrategiaBug)) {
-            System.out.println("Estratégia de Bug removida.");
+            // --- Teste de Busca por ID ---
+            System.out.println("\n--- Teste de Busca de Bug por ID ---");
+            if (novoBug.getId() > 0) {
+                Bug bugBuscado = bugDAO.buscarBugPorId(novoBug.getId());
+                if (bugBuscado != null) {
+                    System.out.println("Bug encontrado: ID " + bugBuscado.getId());
+                    System.out.println("Descrição: " + bugBuscado.getDescricao());
+
+                    // --- Teste de Atualização ---
+                    System.out.println("\n--- Teste de Atualização de Bug ---");
+                    bugBuscado.setDescricao("Personagem atravessa parede na fase 1 (corrigido no main).");
+                    bugBuscado.setSeveridade("BAIXA");
+                    if (bugDAO.atualizarBug(bugBuscado)) {
+                        System.out.println("Bug atualizado com sucesso!");
+                        Bug bugAtualizado = bugDAO.buscarBugPorId(bugBuscado.getId());
+                        if (bugAtualizado != null) {
+                            System.out.println("Nova Descrição: " + bugAtualizado.getDescricao());
+                            System.out.println("Nova Severidade: " + bugAtualizado.getSeveridade());
+                        }
+                    } else {
+                        System.out.println("Falha ao atualizar bug.");
+                    }
+                } else {
+                    System.out.println("Bug com ID " + novoBug.getId() + " não encontrado após inserção.");
+                }
+            }
+
+
+            // --- Teste de Listagem de Bugs por Sessão ---
+            System.out.println("\n--- Teste de Listagem de Bugs por Sessão de Teste ---");
+            List<Bug> bugsDaSessao = bugDAO.listarBugsPorSessaoTeste(sessaoParaBug.getId());
+            if (!bugsDaSessao.isEmpty()) {
+                System.out.println("Bugs da Sessão ID " + sessaoParaBug.getId() + ":");
+                for (Bug b : bugsDaSessao) {
+                    System.out.println("ID: " + b.getId() + ", Descrição: " + b.getDescricao() + ", Severidade: " + b.getSeveridade());
+                }
+            } else {
+                System.out.println("Nenhum bug encontrado para esta sessão.");
+            }
+
+            // --- Teste de Exclusão ---
+            if (novoBug.getId() > 0) {
+                System.out.println("\n--- Teste de Exclusão de Bug ---");
+                if (bugDAO.excluirBug(novoBug.getId())) {
+                    System.out.println("Bug com ID " + novoBug.getId() + " excluído com sucesso!");
+                    idBugInserido = -1; // Mark as deleted for cleanup
+                } else {
+                    System.out.println("Falha ao excluir bug com ID " + novoBug.getId());
+                }
+            }
+
+
+        } catch (SQLException e) {
+            System.err.println("!!!!!! Erro de SQL no método main do BugDAO: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            System.out.println("\n--- Limpando pré-requisitos (tentativa) ---");
+            try {
+                // Excluir bugs restantes da sessão se não foram excluídos individualmente
+                if (idSessaoParaBug != -1) {
+                    List<Bug> bugsRestantes = bugDAO.listarBugsPorSessaoTeste(idSessaoParaBug);
+                    for (Bug b : bugsRestantes) {
+                        System.out.println("Excluindo bug restante ID: " + b.getId());
+                        bugDAO.excluirBug(b.getId());
+                    }
+                }
+
+                if (idSessaoParaBug != -1) {
+                    sessaoTesteDAO.finalizarSessao(idSessaoParaBug);
+                    System.out.println("Sessão finalizada: " + idSessaoParaBug);
+                    if (sessaoTesteDAO.excluirSessaoTeste(idSessaoParaBug)) {
+                        System.out.println("Sessão de Teste removida: " + idSessaoParaBug);
+                    }
+                }
+                if (estrategiaBug != null && estrategiaBug.getId() > 0) {
+                    if (estrategiaDAO.excluirEstrategia(estrategiaBug.getId())) {
+                        System.out.println("Estratégia de Bug removida: " + estrategiaBug.getId());
+                    }
+                }
+                if (testadorBug != null && testadorBug.getId() > 0) {
+                    // Verifique se o usuário não está associado a outras sessões/projetos antes de excluir,
+                    // ou se a exclusão em cascata está configurada adequadamente.
+                    // For testing, direct deletion is fine if it's a dedicated test user.
+                    // System.out.println("Tentando excluir usuário: " + testadorBug.getId());
+                    // if (usuarioDAO.excluirUsuario(testadorBug.getId())) {
+                    //     System.out.println("Testador de Bug removido: " + testadorBug.getId());
+                    // } else {
+                    //    System.out.println("Não foi possível remover o testador ou já removido: " + testadorBug.getId());
+                    // }
+                }
+                if (projetoBug != null && projetoBug.getId() > 0) {
+                    if (projetoDAO.excluirProjeto(projetoBug.getId())) {
+                        System.out.println("Projeto de Bug removido: " + projetoBug.getId());
+                    }
+                }
+            } catch (SQLException ex) {
+                System.err.println("!!!!!! Erro de SQL durante a limpeza no main do BugDAO: " + ex.getMessage());
+                ex.printStackTrace();
+            }
+            System.out.println("--- Testes para BugDAO Concluídos ---");
         }
     }
 }
-
