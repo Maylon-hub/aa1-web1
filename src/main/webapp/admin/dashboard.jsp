@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel do Testador - Game Tester System</title>
+    <title>Painel do Administrador - Game Tester System</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -25,7 +25,7 @@
 
         .sidebar {
             width: 260px;
-            background-color: #2a3f54; /* Um azul escuro diferente para o testador, ou use #343a40 para consistência com admin */
+            background-color: #343a40; /* Cor escura para a sidebar */
             color: #fff;
             padding: 20px;
             box-shadow: 2px 0 5px rgba(0,0,0,0.1);
@@ -35,7 +35,7 @@
             font-size: 1.4em;
             margin-top: 0;
             padding-bottom: 10px;
-            border-bottom: 1px solid #4b5f71; /* Tom mais claro do azul da sidebar */
+            border-bottom: 1px solid #495057;
             text-align: center;
         }
 
@@ -48,7 +48,7 @@
         .sidebar ul li a {
             display: block;
             padding: 12px 15px;
-            color: #c8d6e5; /* Cor de link mais clara para contraste com azul escuro */
+            color: #adb5bd; /* Cinza claro para links */
             text-decoration: none;
             border-radius: 5px;
             margin-bottom: 8px;
@@ -56,16 +56,16 @@
         }
 
         .sidebar ul li a:hover, .sidebar ul li a.active {
-            background-color: #17a2b8; /* Ciano/Azul claro para hover/ativo no painel do testador */
+            background-color: #007bff; /* Azul para hover/ativo */
             color: #fff;
         }
 
         .sidebar .user-info {
             font-size: 0.9em;
-            color: #c8d6e5;
+            color: #adb5bd;
             margin-top: 30px;
             padding-top: 15px;
-            border-top: 1px solid #4b5f71;
+            border-top: 1px solid #495057;
         }
         .sidebar .user-info p { margin: 5px 0; }
 
@@ -87,13 +87,13 @@
 
         .header h1 {
             font-size: 2em;
-            color: #17a2b8; /* Ciano/Azul claro para o título do testador */
+            color: #007bff; /* Azul */
             margin: 0;
         }
 
         .logout-btn {
             padding: 10px 20px;
-            background-color: #6c757d; /* Cinza para logout, para diferenciar do vermelho do admin ou manter vermelho */
+            background-color: #dc3545; /* Vermelho para logout */
             color: white;
             text-decoration: none;
             border-radius: 5px;
@@ -102,7 +102,7 @@
         }
 
         .logout-btn:hover {
-            background-color: #5a6268;
+            background-color: #c82333; /* Vermelho mais escuro no hover */
         }
 
         .welcome-message {
@@ -126,7 +126,7 @@
         }
         .widget h3 {
             margin-top: 0;
-            color: #17a2b8; /* Ciano/Azul claro para títulos de widget */
+            color: #007bff;
         }
         .widget ul {
             padding-left: 20px;
@@ -136,21 +136,18 @@
             margin-bottom: 8px;
         }
         .widget ul li a {
-            color: #0056b3; /* Azul escuro padrão para links internos */
+            color: #0056b3; /* Azul escuro para links dentro dos widgets */
             text-decoration: none;
         }
         .widget ul li a:hover {
             text-decoration: underline;
         }
-        .mensagem { padding: 10px; margin-bottom: 15px; border-radius: 4px; }
-        .mensagem-sucesso { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .mensagem-erro { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 
         .footer {
             text-align: center;
             padding: 20px;
-            background-color: #2a3f54; /* Cor da sidebar do testador */
-            color: #c8d6e5;
+            background-color: #343a40;
+            color: #adb5bd;
             font-size: 0.9em;
             margin-top: auto; /* Empurra o rodapé para baixo se o conteúdo for curto */
         }
@@ -164,11 +161,11 @@
         <nav>
             <ul>
                 <%-- Adicione 'active' à classe do link da página atual se quiser destacar --%>
-                <li><a href="${pageContext.request.contextPath}/testador/dashboard.jsp" class="active">Dashboard</a></li>
-                <li><a href="${pageContext.request.contextPath}/testador/sessoes?action=novo">Nova Sessão de Teste</a></li>
-                <li><a href="${pageContext.request.contextPath}/testador/minhasSessoes">Minhas Sessões</a></li>
-                <li><a href="${pageContext.request.contextPath}/testador/meusProjetos">Meus Projetos</a></li>
-                <li><a href="#">Visualizar Estratégias</a></li> <%-- Placeholder para R6 ou link para listagem pública --%>
+                <li><a href="${pageContext.request.contextPath}/admin/dashboard.jsp" class="active">Dashboard</a></li>
+                <li><a href="${pageContext.request.contextPath}/admin/estrategias?action=listar">Gerenciar Estratégias</a></li>
+                <li><a href="${pageContext.request.contextPath}/admin/gerenciarProjetos">Gerenciar Projetos</a></li>
+                <li><a href="${pageContext.request.contextPath}/admin/gerenciarUsuarios">Gerenciar Usuários</a></li>
+                <li><a href="#">Sessões de Teste (Admin)</a></li> <%-- Placeholder --%>
             </ul>
         </nav>
         <c:if test="${not empty sessionScope.usuarioLogado}">
@@ -182,22 +179,22 @@
 
     <main class="main-content">
         <div class="header">
-            <h1>Painel do Testador</h1>
+            <h1>Painel do Administrador</h1>
             <a href="${pageContext.request.contextPath}/login?action=logout" class="logout-btn">Logout</a>
         </div>
 
         <p class="welcome-message">
-            Bem-vindo(a) ao seu painel de testes, <strong><c:out value="${sessionScope.usuarioLogado.nome}"/></strong>!
+            Bem-vindo(a) de volta, <strong><c:out value="${sessionScope.usuarioLogado.nome}"/></strong>!
         </p>
 
         <c:if test="${not empty sessionScope.mensagemSucesso}">
-            <div class="mensagem mensagem-sucesso">
+            <div style="padding: 10px; margin-bottom: 15px; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 4px;">
                     ${sessionScope.mensagemSucesso}
             </div>
             <c:remove var="mensagemSucesso" scope="session"/>
         </c:if>
         <c:if test="${not empty sessionScope.mensagemErro}">
-            <div class="mensagem mensagem-erro">
+            <div style="padding: 10px; margin-bottom: 15px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 4px;">
                     ${sessionScope.mensagemErro}
             </div>
             <c:remove var="mensagemErro" scope="session"/>
@@ -205,26 +202,27 @@
 
         <div class="dashboard-widgets">
             <section class="widget">
-                <h3>Minhas Atividades</h3>
+                <h3>Gerenciamento Principal</h3>
                 <ul>
-                    <li><a href="${pageContext.request.contextPath}/testador/sessoes?action=novo">Cadastrar Nova Sessão de Teste</a> (R7)</li>
-                    <li><a href="${pageContext.request.contextPath}/testador/minhasSessoes">Gerenciar Minhas Sessões de Teste</a> (R8, R9)</li>
+                    <li><a href="${pageContext.request.contextPath}/admin/estrategias?action=listar">Gerenciar Estratégias</a> (R5)</li>
+                    <li><a href="${pageContext.request.contextPath}/admin/gerenciarProjetos">Gerenciar Projetos</a> (R3)</li>
+                    <li><a href="${pageContext.request.contextPath}/admin/gerenciarUsuarios">Gerenciar Usuários</a> (R1, R2)</li>
                 </ul>
             </section>
 
             <section class="widget">
-                <h3>Recursos</h3>
+                <h3>Sessões de Teste</h3>
                 <ul>
-                    <li><a href="${pageContext.request.contextPath}/testador/meusProjetos">Visualizar Projetos Atribuídos</a> (R4)</li>
-                    <li><a href="#">Visualizar Todas as Estratégias</a> (R6)</li>
+                    <li><a href="#">Visualizar Todas as Sessões</a> (R9)</li>
+                    <li><a href="#">Configurações de Teste</a></li>
                 </ul>
             </section>
 
             <section class="widget">
-                <h3>Meu Perfil</h3>
+                <h3>Sistema</h3>
                 <ul>
-                    <li><a href="#">Editar Meu Cadastro</a></li>
-                    <li><a href="#">Alterar Senha</a></li>
+                    <li><a href="#">Logs da Aplicação</a></li>
+                    <li><a href="#">Configurações Globais</a></li>
                 </ul>
             </section>
         </div>

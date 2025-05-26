@@ -11,7 +11,7 @@ import static org.postgresql.PGProperty.USER;
 public class ConexaoDB {
     private static final String URL = "jdbc:postgresql://localhost:5432/sistema_testes_db";
     private static final String USER = "postgres"; // Ou o seu usuário do PostgreSQL
-    private static final String PASSWORD = "212199"; // <<< PONTO CRÍTICO!
+    private static final String PASSWORD = "admin"; // <<< PONTO CRÍTICO!
 
     /**
      * Retorna uma nova conexão com o banco de dados.

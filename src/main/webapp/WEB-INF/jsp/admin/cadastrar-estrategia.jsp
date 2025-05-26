@@ -68,7 +68,7 @@
     </form>
 
     <div class="navigation-links">
-        <a href="${pageContext.request.contextPath}/WEB-INF/jsp/admin/dashboard.jsp">Voltar ao Dashboard</a>
+        <a href="${pageContext.request.contextPath}/admin/dashboard.jsp">Voltar ao Dashboard</a>
         <a href="${pageContext.request.contextPath}/estrategias">Ver Lista de Estratégias</a>
     </div>
 </div>
