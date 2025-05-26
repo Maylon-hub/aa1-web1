@@ -44,7 +44,7 @@ public class ProjetoDAO {
             System.err.println("Erro ao inserir projeto: " + e.getMessage());
         } finally {
             ConexaoDB.close(rs);
-            ConexaoDB.close(stmt);
+            ConexaoDB.close((ResultSet) stmt);
             ConexaoDB.closeConnection(conn);
         }
         return idGerado;
@@ -74,7 +74,7 @@ public class ProjetoDAO {
             System.err.println("Erro ao buscar projeto por ID: " + e.getMessage());
         } finally {
             ConexaoDB.close(rs);
-            ConexaoDB.close(stmt);
+            ConexaoDB.close((ResultSet) stmt);
             ConexaoDB.closeConnection(conn);
         }
         return projeto;
@@ -118,7 +118,7 @@ public class ProjetoDAO {
             try {
                 if (conn != null) conn.setAutoCommit(true); // Restaurar auto-commit
             } catch (SQLException ex) { /* Ignorar */ }
-            ConexaoDB.close(stmt);
+            ConexaoDB.close((ResultSet) stmt);
             ConexaoDB.closeConnection(conn);
         }
     }
@@ -138,7 +138,7 @@ public class ProjetoDAO {
             // Tratar ConstraintViolationException (usuário em uso)
             return false;
         } finally {
-            ConexaoDB.close(stmt);
+            ConexaoDB.close((ResultSet) stmt);
             ConexaoDB.closeConnection(conn);
         }
     }
@@ -168,7 +168,7 @@ public class ProjetoDAO {
             System.err.println("Erro ao listar projetos: " + e.getMessage());
         } finally {
             ConexaoDB.close(rs);
-            ConexaoDB.close(stmt);
+            ConexaoDB.close((ResultSet) stmt);
             ConexaoDB.closeConnection(conn);
         }
         return projetos;
@@ -234,7 +234,7 @@ public class ProjetoDAO {
             }
         } finally {
             ConexaoDB.close(rs);
-            ConexaoDB.close(stmt);
+            ConexaoDB.close((ResultSet) stmt);
         }
         return membros;
     }

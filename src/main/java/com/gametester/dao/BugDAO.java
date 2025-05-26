@@ -41,7 +41,7 @@ public class BugDAO {
             System.err.println("Erro ao inserir bug: " + e.getMessage());
         } finally {
             ConexaoDB.close(rs);
-            ConexaoDB.close(stmt);
+            ConexaoDB.close((ResultSet) stmt);
             ConexaoDB.closeConnection(conn);
         }
         return idGerado;
@@ -71,7 +71,7 @@ public class BugDAO {
             System.err.println("Erro ao buscar bug por ID: " + e.getMessage());
         } finally {
             ConexaoDB.close(rs);
-            ConexaoDB.close(stmt);
+            ConexaoDB.close((ResultSet) stmt);
             ConexaoDB.closeConnection(conn);
         }
         return bug;
@@ -95,7 +95,7 @@ public class BugDAO {
             System.err.println("Erro ao atualizar bug: " + e.getMessage());
             return false;
         } finally {
-            ConexaoDB.close(stmt);
+            ConexaoDB.close((ResultSet) stmt);
             ConexaoDB.closeConnection(conn);
         }
     }
@@ -114,7 +114,7 @@ public class BugDAO {
             System.err.println("Erro ao excluir bug: " + e.getMessage());
             return false;
         } finally {
-            ConexaoDB.close(stmt);
+            ConexaoDB.close((ResultSet) stmt);
             ConexaoDB.closeConnection(conn);
         }
     }
@@ -144,7 +144,7 @@ public class BugDAO {
             System.err.println("Erro ao listar bugs por sessão de teste: " + e.getMessage());
         } finally {
             ConexaoDB.close(rs);
-            ConexaoDB.close(stmt);
+            ConexaoDB.close((ResultSet) stmt);
             ConexaoDB.closeConnection(conn);
         }
         return bugs;

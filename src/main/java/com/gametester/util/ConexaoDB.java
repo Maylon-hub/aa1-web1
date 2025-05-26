@@ -1,6 +1,11 @@
 package com.gametester.util;
 
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 public class ConexaoDB {
     private static final String URL = "jdbc:postgresql://localhost:5432/sistema_testes_db";
 
@@ -29,4 +34,6 @@ public class ConexaoDB {
         }
     }
 
+    public static void close(ResultSet rs) {
+    }
 }
