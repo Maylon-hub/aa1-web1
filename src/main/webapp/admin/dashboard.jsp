@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel do Testador - Game Tester System</title>
+    <title>Painel do Administrador - Game Tester System</title>
     <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/estiloPrincipal.css">
 </head>
 <body>
@@ -16,11 +16,11 @@
         <nav>
             <ul>
                 <%-- Adicione 'active' à classe do link da página atual se quiser destacar --%>
-                <li><a href="${pageContext.request.contextPath}/testador/dashboard.jsp" class="active">Dashboard</a></li>
-                <li><a href="${pageContext.request.contextPath}/testador/sessoes?action=novo">Nova Sessão de Teste</a></li>
-                <li><a href="${pageContext.request.contextPath}/testador/minhasSessoes">Minhas Sessões</a></li>
-                <li><a href="${pageContext.request.contextPath}/testador/meusProjetos">Meus Projetos</a></li>
-                <li><a href="#">Visualizar Estratégias</a></li> <%-- Placeholder para R6 ou link para listagem pública --%>
+                <li><a href="${pageContext.request.contextPath}/admin/dashboard.jsp" class="active">Dashboard</a></li>
+                <li><a href="${pageContext.request.contextPath}/admin/estrategias?action=listar">Gerenciar Estratégias</a></li>
+                <li><a href="${pageContext.request.contextPath}/admin/gerenciarProjetos">Gerenciar Projetos</a></li>
+                <li><a href="${pageContext.request.contextPath}/admin/gerenciarUsuarios">Gerenciar Usuários</a></li>
+                <li><a href="#">Sessões de Teste (Admin)</a></li> <%-- Placeholder --%>
             </ul>
         </nav>
         <c:if test="${not empty sessionScope.usuarioLogado}">
@@ -34,22 +34,22 @@
 
     <main class="main-content">
         <div class="header">
-            <h1>Painel do Testador</h1>
+            <h1>Painel do Administrador</h1>
             <a href="${pageContext.request.contextPath}/login?action=logout" class="logout-btn">Logout</a>
         </div>
 
         <p class="welcome-message">
-            Bem-vindo(a) ao seu painel de testes, <strong><c:out value="${sessionScope.usuarioLogado.nome}"/></strong>!
+            Bem-vindo(a) de volta, <strong><c:out value="${sessionScope.usuarioLogado.nome}"/></strong>!
         </p>
 
         <c:if test="${not empty sessionScope.mensagemSucesso}">
-            <div class="mensagem mensagem-sucesso">
+            <div style="padding: 10px; margin-bottom: 15px; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 4px;">
                     ${sessionScope.mensagemSucesso}
             </div>
             <c:remove var="mensagemSucesso" scope="session"/>
         </c:if>
         <c:if test="${not empty sessionScope.mensagemErro}">
-            <div class="mensagem mensagem-erro">
+            <div style="padding: 10px; margin-bottom: 15px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 4px;">
                     ${sessionScope.mensagemErro}
             </div>
             <c:remove var="mensagemErro" scope="session"/>
@@ -57,26 +57,27 @@
 
         <div class="dashboard-widgets">
             <section class="widget">
-                <h3>Minhas Atividades</h3>
+                <h3>Gerenciamento Principal</h3>
                 <ul>
-                    <li><a href="${pageContext.request.contextPath}/testador/sessoes?action=novo">Cadastrar Nova Sessão de Teste</a> (R7)</li>
-                    <li><a href="${pageContext.request.contextPath}/testador/minhasSessoes">Gerenciar Minhas Sessões de Teste</a> (R8, R9)</li>
+                    <li><a href="${pageContext.request.contextPath}/admin/estrategias?action=listar">Gerenciar Estratégias</a> (R5)</li>
+                    <li><a href="${pageContext.request.contextPath}/admin/gerenciarProjetos">Gerenciar Projetos</a> (R3)</li>
+                    <li><a href="${pageContext.request.contextPath}/admin/gerenciarUsuarios">Gerenciar Usuários</a> (R1, R2)</li>
                 </ul>
             </section>
 
             <section class="widget">
-                <h3>Recursos</h3>
+                <h3>Sessões de Teste</h3>
                 <ul>
-                    <li><a href="${pageContext.request.contextPath}/testador/meusProjetos">Visualizar Projetos Atribuídos</a> (R4)</li>
-                    <li><a href="#">Visualizar Todas as Estratégias</a> (R6)</li>
+                    <li><a href="#">Visualizar Todas as Sessões</a> (R9)</li>
+                    <li><a href="#">Configurações de Teste</a></li>
                 </ul>
             </section>
 
             <section class="widget">
-                <h3>Meu Perfil</h3>
+                <h3>Sistema</h3>
                 <ul>
-                    <li><a href="#">Editar Meu Cadastro</a></li>
-                    <li><a href="#">Alterar Senha</a></li>
+                    <li><a href="#">Logs da Aplicação</a></li>
+                    <li><a href="#">Configurações Globais</a></li>
                 </ul>
             </section>
         </div>
