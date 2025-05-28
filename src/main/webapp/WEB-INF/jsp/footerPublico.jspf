@@ -1,0 +1,28 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="http://jakarta.sun.com/jsp/jstl/core" prefix="c" %>
+
+<%--
+  Fragmento JSP para o rodapé público.
+  Este arquivo deve ser incluído em JSPs usando: <jsp:include page="/WEB-INF/jspf/footerPublico.jspf" />
+  A classe CSS "footer" deve estar definida no seu arquivo CSS principal (ex: estiloPrincipal.css).
+--%>
+
+<footer class="footer">
+    <%--
+        Para obter o ano corrente dinamicamente.
+        jsp:useBean cria uma instância de java.util.Date.
+        jsp:getProperty pega o ano (que é o ano - 1900).
+        c:set ajusta para o ano correto.
+    --%>
+    <jsp:useBean id="javaUtilDateForYear" class="java.util.Date" scope="page" />
+    <c:set var="currentYearDynamic"><jsp:getProperty name="javaUtilDateForYear" property="year" /></c:set>
+    <p>&copy; <c:out value="${currentYearDynamic + 1900}"/> Game Tester System. Todos os direitos reservados.</p>
+    <%-- Você pode adicionar mais links ou informações aqui, se desejar --%>
+    <%-- Exemplo:
+    <p>
+        <a href="${pageContext.request.contextPath}/sobreNos.jsp">Sobre Nós</a> |
+        <a href="${pageContext.request.contextPath}/contato.jsp">Contato</a> |
+        <a href="${pageContext.request.contextPath}/termosDeUso.jsp">Termos de Uso</a>
+    </p>
+    --%>
+</footer>

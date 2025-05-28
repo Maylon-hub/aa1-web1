@@ -47,7 +47,10 @@ public class LoginServlet extends HttpServlet {
                         response.sendRedirect(request.getContextPath() + "/admin/dashboard.jsp"); // Exemplo de URL
                     } else if ("TESTADOR".equals(tipoPerfil)) {
                         response.sendRedirect(request.getContextPath() + "/testador/dashboard.jsp"); // Exemplo de URL
-                    } else {
+                    } else if ("VISITANTE".equals(tipoPerfil)) {
+                        response.sendRedirect(request.getContextPath() + "/visitante/dashboard.jsp"); // Exemplo de URL
+                    }
+                    else {
                         // Perfil desconhecido ou não autorizado para login direto (ex: VISITANTE)
                         mensagemErro = "Tipo de perfil não autorizado para login.";
                         request.setAttribute("erroLogin", mensagemErro);
