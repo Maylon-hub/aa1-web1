@@ -351,6 +351,7 @@ table .actions a {
     font-size: 0.9em;
     margin-top: auto; /* Garante que fique no final se o conteúdo da página for curto */
 }
+
 .footer.testador-footer { /* Rodapé do testador (se quiser diferenciar) */
     background-color: #2a3f54;
     color: #c8d6e5;
