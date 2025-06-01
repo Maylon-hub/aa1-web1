@@ -6,56 +6,115 @@
   To change this template use File | Settings | File Templates.
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ page import="java.util.List, java.util.ArrayList" %>
+<%@ page import="com.gametester.model.Usuario" %>
 
-<html>
+<%
+    String contextPath = request.getContextPath();
+    Usuario usuarioLogado = (Usuario) session.getAttribute("usuarioLogado");
+    String mensagemErro = (String) request.getAttribute("mensagemErro");
+
+    List<Usuario> listaUsuariosDisponiveis = (List<Usuario>) request.getAttribute("listaUsuariosDisponiveis");
+    if (listaUsuariosDisponiveis == null) {
+        listaUsuariosDisponiveis = new ArrayList<>();
+    }
+
+    // Para repopular seleção múltipla
+    String[] paramMembrosIds = request.getParameterValues("membrosIds");
+    java.util.Set<String> selectedMembrosIds = new java.util.HashSet<>();
+    if (paramMembrosIds != null) {
+        for (String id : paramMembrosIds) {
+            selectedMembrosIds.add(id);
+        }
+    }
+%>
+
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
-    <title>Cadastrar Novo Projeto</title>
-    <%-- Inclua seus CSS aqui --%>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastrar Novo Projeto - Game Tester System</title>
+    <link rel="stylesheet" type="text/css" href="<%= contextPath %>/css/estiloPrincipal.css">
+    <style>
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input[type="text"],
+        .form-group textarea,
+        .form-group select {
+            width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;
+        }
+        .form-group select[multiple] { height: 120px; }
+        .form-group small { font-size: 0.9em; color: #666; }
+    </style>
 </head>
 <body>
-<h2>Cadastrar Novo Projeto</h2>
+<div class="page-container">
+    <aside class="sidebar">
+        <h2>Game Tester Sys</h2>
+        <nav>
+            <ul>
+                <% String paginaAtivaCadastrar = "projetos"; %>
+                <li><a href="<%= contextPath %>/admin/dashboard.jsp" class="<%= "dashboard".equals(paginaAtivaCadastrar) ? "active" : "" %>">Dashboard</a></li>
+                <li><a href="<%= contextPath %>/admin/estrategias?action=listar" class="<%= "estrategias".equals(paginaAtivaCadastrar) ? "active" : "" %>">Gerenciar Estratégias</a></li>
+                <li><a href="<%= contextPath %>/admin/listar-projetos.jsp" class="<%= "projetos".equals(paginaAtivaCadastrar) ? "active" : "" %>">Gerenciar Projetos</a></li>
+                <li><a href="<%= contextPath %>/admin/gerenciarUsuarios" class="<%= "usuarios".equals(paginaAtivaCadastrar) ? "active" : "" %>">Gerenciar Usuários</a></li>
+                <li><a href="#" class="<%= "sessoesAdmin".equals(paginaAtivaCadastrar) ? "active" : "" %>">Sessões de Teste (Admin)</a></li>
+            </ul>
+        </nav>
+        <% if (usuarioLogado != null) { %>
+        <div class="user-info">
+            <p><strong>Usuário:</strong><br><%= usuarioLogado.getNome() %></p>
+            <p><strong>Email:</strong><br><%= usuarioLogado.getEmail() %></p>
+            <p><strong>Perfil:</strong><br><%= usuarioLogado.getTipoPerfil() %></p>
+        </div>
+        <% } %>
+    </aside>
 
-<c:if test="${not empty mensagemErro}">
-    <p style="color:red;">${fn:escapeXml(mensagemErro)}</p>
-</c:if>
-<c:if test="${not empty requestScope.mensagemSucesso}"> <%-- Se o sucesso for via request --%>
-    <p style="color:green;">${fn:escapeXml(requestScope.mensagemSucesso)}</p>
-</c:if>
-<c:if test="${not empty sessionScope.mensagemSucesso}"> <%-- Se o sucesso for via session (após redirect) --%>
-    <p style="color:green;">${fn:escapeXml(sessionScope.mensagemSucesso)}</p>
-    <c:remove var="mensagemSucesso" scope="session" /> <%-- Limpa a mensagem da sessão --%>
-</c:if>
+    <main class="main-content">
+        <div class="header">
+            <h1>Cadastrar Novo Projeto (R3)</h1>
+            <a href="<%= contextPath %>/login?action=logout" class="logout-btn">Logout</a>
+        </div>
 
-<form method="POST" action="${pageContext.request.contextPath}/admin/cadastrarProjeto">
-    <div>
-        <label for="nomeProjeto">Nome do Projeto:</label><br>
-        <input type="text" id="nomeProjeto" name="nomeProjeto" value="${fn:escapeXml(param.nomeProjeto)}" required>
-    </div>
-    <br>
-    <div>
-        <label for="descricao">Descrição:</label><br>
-        <textarea id="descricao" name="descricao" rows="4" cols="50">${fn:escapeXml(param.descricao)}</textarea>
-    </div>
-    <br>
-    <div>
-        <label for="membrosIds">Membros Permitidos:</label><br>
-        <select id="membrosIds" name="membrosIds" multiple size="5">
-            <c:forEach var="usuario" items="${listaUsuariosDisponiveis}">
-                <option value="${usuario.id}"
-                        <c:forEach var="selectedId" items="${paramValues.membrosIds}">
-                            <c:if test="${usuario.id == selectedId}">selected</c:if>
-                        </c:forEach>
-                >${fn:escapeXml(usuario.nome)} (${fn:escapeXml(usuario.tipoPerfil)})</option>
-            </c:forEach>
-        </select>
-        <small>Segure Ctrl (ou Cmd) para selecionar múltiplos membros.</small>
-    </div>
-    <br>
-    <input type="submit" value="Cadastrar Projeto">
-</form>
-<br>
-<a href="${pageContext.request.contextPath}/admin/dashboard.jsp">Voltar ao Dashboard</a>
+        <% if (mensagemErro != null) { %>
+        <div class="mensagem erro"><%= mensagemErro %></div>
+        <% } %>
+
+        <form method="POST" action="<%= contextPath %>/admin/cadastrar-projeto.jsp" class="form-cadastro">
+            <div class="form-group">
+                <label for="nomeProjeto">Nome do Projeto:</label>
+                <input type="text" id="nomeProjeto" name="nomeProjeto" value="<%= request.getParameter("nomeProjeto") != null ? request.getParameter("nomeProjeto") : "" %>" required>
+            </div>
+
+            <div class="form-group">
+                <label for="descricao">Descrição:</label>
+                <textarea id="descricao" name="descricao" rows="4"><%= request.getParameter("descricao") != null ? request.getParameter("descricao") : "" %></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="membrosIds">Membros Permitidos:</label>
+                <select id="membrosIds" name="membrosIds" multiple>
+                    <% for (Usuario usuario : listaUsuariosDisponiveis) { %>
+                    <option value="<%= usuario.getId() %>"
+                            <%= selectedMembrosIds.contains(String.valueOf(usuario.getId())) ? "selected" : "" %>>
+                        <%= usuario.getNome() %> (<%= usuario.getTipoPerfil() %>)
+                    </option>
+                    <% } %>
+                </select>
+                <small>Segure Ctrl (ou Cmd no Mac) para selecionar múltiplos membros.</small>
+            </div>
+
+            <button type="submit" class="btn">Cadastrar Projeto</button>
+            <a href="<%= contextPath %>/admin/listar-projetos.jsp" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </main>
+</div>
+
+<footer class="footer">
+    <% java.util.Calendar cal = java.util.Calendar.getInstance(); int year = cal.get(java.util.Calendar.YEAR); %>
+    <p>&copy; <%= year %> Game Tester System. Todos os direitos reservados.</p>
+</footer>
+
 </body>
 </html>

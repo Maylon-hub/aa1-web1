@@ -18,7 +18,7 @@
                 <%-- Adicione 'active' à classe do link da página atual se quiser destacar --%>
                 <li><a href="${pageContext.request.contextPath}/admin/dashboard.jsp" class="active">Dashboard</a></li>
                 <li><a href="${pageContext.request.contextPath}/admin/estrategias?action=listar">Gerenciar Estratégias</a></li>
-                <li><a href="${pageContext.request.contextPath}/admin/gerenciarProjetos">Gerenciar Projetos</a></li>
+                <li><a href="${pageContext.request.contextPath}/admin/listar-projetos.jsp">Gerenciar Projetos</a></li>
                 <li><a href="${pageContext.request.contextPath}/admin/gerenciarUsuarios">Gerenciar Usuários</a></li>
                 <li><a href="#">Sessões de Teste (Admin)</a></li> <%-- Placeholder --%>
             </ul>
@@ -60,7 +60,7 @@
                 <h3>Gerenciamento Principal</h3>
                 <ul>
                     <li><a href="${pageContext.request.contextPath}/admin/estrategias?action=listar">Gerenciar Estratégias</a> (R5)</li>
-                    <li><a href="${pageContext.request.contextPath}/admin/gerenciarProjetos">Gerenciar Projetos</a> (R3)</li>
+                    <li><a href="${pageContext.request.contextPath}/admin/listar-projetos.jsp">Gerenciar Projetos</a> (R3, R4)</li>
                     <li><a href="${pageContext.request.contextPath}/admin/gerenciarUsuarios">Gerenciar Usuários</a> (R1, R2)</li>
                 </ul>
             </section>

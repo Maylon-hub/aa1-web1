@@ -1,4 +1,4 @@
-package com.gametester.controller;
+package com.gametester.controller.admin;
 
 import com.gametester.dao.ProjetoDAO;
 import com.gametester.dao.UsuarioDAO; // Para buscar usuários para a lista de membros
@@ -16,7 +16,6 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @WebServlet("/admin/cadastrarProjeto") // Caminho corrigido para /admin/*
 public class CadastrarProjetoServlet extends HttpServlet {
