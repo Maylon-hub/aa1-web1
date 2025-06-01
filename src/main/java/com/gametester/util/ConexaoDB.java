@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import static org.postgresql.PGProperty.USER;
 
 public class ConexaoDB {
-    private static final String URL = "jdbc:postgresql://localhost:5432/sistema_testes_db";
+    private static final String URL = "jdbc:postgresql://localhost:9091/sistema_testes_db";
     private static final String USER = "postgres"; // Ou o seu usuário do PostgreSQL
     private static final String PASSWORD = "admin"; // <<< PONTO CRÍTICO!
 
