@@ -7,6 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Nova Sessão de Teste - Testador</title>
+
     <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/estiloPrincipal.css">
 </head>
 <body>
