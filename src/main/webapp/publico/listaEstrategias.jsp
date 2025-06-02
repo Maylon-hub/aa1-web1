@@ -81,11 +81,8 @@
     </div>
 </div>
 
-<%-- Incluindo rodapé Publico --%>
-<jsp:include page="/WEB-INF/jsp/footerPublico.jspf" />
-<%-- rodape interno:
-<footer class="footer" style="background-color: #343a40; color: #adb5bd; text-align:center; padding: 20px; margin-top: 30px;">
-    <p>&copy; <jsp:useBean id="javaDate" class="java.util.Date" /><c:set var="currentYear"><jsp:getProperty name="javaDate" property="year" /></c:set><c:out value="${currentYear + 1900}"/> Game Tester System.</p>
+<footer class="footer">
+    <p>&copy; <jsp:useBean id="javaDate" class="java.util.Date" /><c:set var="currentYear"><jsp:getProperty name="javaDate" property="year" /></c:set><c:out value="${currentYear + 1900}"/> Game Tester System. Todos os direitos reservados.</p>
 </footer>
 
 </body>

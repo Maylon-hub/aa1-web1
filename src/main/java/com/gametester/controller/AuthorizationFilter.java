@@ -33,7 +33,10 @@ public class AuthorizationFilter implements Filter {
 
     // Caminhos de funcionalidades acessíveis por VISITANTES (e, por hierarquia, por usuários logados)
     private static final Set<String> CAMINHOS_PUBLICOS_VISITANTE = new HashSet<>(Arrays.asList(
-            "/estrategias-publicas" // Exemplo para R6 - Listar Estratégias publicamente
+            "/publico/listaEstrategias.jsp",
+            "/estrategias-publicas",
+            "/estrategias"
+            // Exemplo para R6 - Listar Estratégias publicamente
             // Adicionar outras rotas públicas de funcionalidades aqui
     ));
 

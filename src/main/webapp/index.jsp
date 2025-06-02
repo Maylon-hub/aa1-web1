@@ -58,6 +58,18 @@
             transition: background-color 0.3s ease, transform 0.2s ease;
         }
 
+        .btn-strat {
+            display: inline-block;
+            padding: 15px 35px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
         .btn-login:hover, .btn-login:focus {
             background-color: #0056b3; /* Azul mais escuro no hover */
             transform: translateY(-2px); /* Efeito sutil de elevação */
@@ -79,7 +91,7 @@
         Organize seus projetos, defina estratégias e acompanhe suas sessões de teste de forma eficiente.
     </p>
     <a href="${pageContext.request.contextPath}/login.jsp" class="btn-login">Acessar o Sistema</a>
-    <a href="${pageContext.request.contextPath}/estrategias-publicas" class="btn-login">Ver Estratégias Públicas</a>
+    <a href="${pageContext.request.contextPath}/estrategias-publicas" class="btn-strat">Ver Estratégias Públicas</a>
 </div>
 
 <div class="footer">
