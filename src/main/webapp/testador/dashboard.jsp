@@ -17,10 +17,10 @@
             <ul>
                 <%-- Adicione 'active' à classe do link da página atual se quiser destacar --%>
                 <li><a href="${pageContext.request.contextPath}/testador/dashboard.jsp" class="active">Dashboard</a></li>
-                <li><a href="${pageContext.request.contextPath}/testador/sessoes?action=novo">Nova Sessão de Teste</a></li>
+                <li><a href="${pageContext.request.contextPath}/testador/cadastrarSessao">Nova Sessão de Teste</a></li>
                 <li><a href="${pageContext.request.contextPath}/testador/minhasSessoes">Minhas Sessões</a></li>
                 <li><a href="${pageContext.request.contextPath}/testador/meusProjetos">Meus Projetos</a></li>
-                <li><a href="#">Visualizar Estratégias</a></li> <%-- Placeholder para R6 ou link para listagem pública --%>
+                <li><a href="${pageContext.request.contextPath}/estrategias">Estratégias</a></li>
             </ul>
         </nav>
         <c:if test="${not empty sessionScope.usuarioLogado}">
