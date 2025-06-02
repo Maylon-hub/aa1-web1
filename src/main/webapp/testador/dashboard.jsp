@@ -1,82 +1,90 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib uri="jakarta.tags.core" prefix="c" %>
+<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+
+<%-- AQUI: Defina o locale para Português do Brasil --%>
+<fmt:setLocale value="pt" />
+<%-- Define o bundle de mensagens que será usado na página --%>
+<fmt:setBundle basename="message"/>
 
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="${not empty sessionScope.userLocale ? sessionScope.userLocale.language : 'pt-BR'}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel do Testador - Game Tester System</title>
+    <title><fmt:message key="dashboard.tester.pageTitle"/></title>
     <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/estiloPrincipal.css">
 </head>
 <body>
 <div class="page-container">
     <aside class="sidebar">
-        <h2>Game Tester Sys</h2>
+        <h2><fmt:message key="dashboard.tester.sidebar.systemName"/></h2>
         <nav>
             <ul>
-                <%-- Adicione 'active' à classe do link da página atual se quiser destacar --%>
-                <li><a href="${pageContext.request.contextPath}/testador/dashboard.jsp" class="active">Dashboard</a></li>
-                <li><a href="${pageContext.request.contextPath}/testador/sessoes?action=novo">Nova Sessão de Teste</a></li>
-                <li><a href="${pageContext.request.contextPath}/testador/minhasSessoes">Minhas Sessões</a></li>
-                <li><a href="${pageContext.request.contextPath}/testador/meusProjetos">Meus Projetos</a></li>
-                <li><a href="#">Visualizar Estratégias</a></li> <%-- Placeholder para R6 ou link para listagem pública --%>
+                <li><a href="${pageContext.request.contextPath}/testador/dashboard.jsp" class="active"><fmt:message key="dashboard.tester.sidebar.link.dashboard"/></a></li>
+                <li><a href="${pageContext.request.contextPath}/testador/sessoes?action=novo"><fmt:message key="dashboard.tester.sidebar.link.newSession"/></a></li>
+                <li><a href="${pageContext.request.contextPath}/testador/minhasSessoes"><fmt:message key="dashboard.tester.sidebar.link.mySessions"/></a></li>
+                <li><a href="${pageContext.request.contextPath}/testador/meusProjetos"><fmt:message key="dashboard.tester.sidebar.link.myProjects"/></a></li>
+                <li><a href="#"><fmt:message key="dashboard.tester.sidebar.link.viewStrategies"/></a></li>
             </ul>
         </nav>
         <c:if test="${not empty sessionScope.usuarioLogado}">
             <div class="user-info">
-                <p><strong>Usuário:</strong><br><c:out value="${sessionScope.usuarioLogado.nome}"/></p>
-                <p><strong>Email:</strong><br><c:out value="${sessionScope.usuarioLogado.email}"/></p>
-                <p><strong>Perfil:</strong><br><c:out value="${sessionScope.usuarioLogado.tipoPerfil}"/></p>
+                <p><strong><fmt:message key="dashboard.tester.userInfo.user"/></strong><br><c:out value="${sessionScope.usuarioLogado.nome}"/></p>
+                <p><strong><fmt:message key="dashboard.tester.userInfo.email"/></strong><br><c:out value="${sessionScope.usuarioLogado.email}"/></p>
+                <p><strong><fmt:message key="dashboard.tester.userInfo.profile"/></strong><br><c:out value="${sessionScope.usuarioLogado.tipoPerfil}"/></p>
             </div>
         </c:if>
     </aside>
 
     <main class="main-content">
         <div class="header">
-            <h1>Painel do Testador</h1>
-            <a href="${pageContext.request.contextPath}/login?action=logout" class="logout-btn">Logout</a>
+            <h1><fmt:message key="dashboard.tester.header.title"/></h1>
+            <a href="${pageContext.request.contextPath}/login?action=logout" class="logout-btn"><fmt:message key="dashboard.tester.header.logout"/></a>
         </div>
 
         <p class="welcome-message">
-            Bem-vindo(a) ao seu painel de testes, <strong><c:out value="${sessionScope.usuarioLogado.nome}"/></strong>!
+            <fmt:message key="dashboard.tester.welcomeMessage">
+                <fmt:param><strong><c:out value="${sessionScope.usuarioLogado.nome}"/></strong></fmt:param>
+            </fmt:message>
         </p>
 
+        <%-- As mensagens de sucesso/erro devem vir como CHAVES do Servlet --%>
         <c:if test="${not empty sessionScope.mensagemSucesso}">
             <div class="mensagem mensagem-sucesso">
-                    ${sessionScope.mensagemSucesso}
+                <fmt:message key="${sessionScope.mensagemSucesso}"/>
             </div>
             <c:remove var="mensagemSucesso" scope="session"/>
         </c:if>
         <c:if test="${not empty sessionScope.mensagemErro}">
             <div class="mensagem mensagem-erro">
-                    ${sessionScope.mensagemErro}
+                <fmt:message key="${sessionScope.mensagemErro}"/>
             </div>
             <c:remove var="mensagemErro" scope="session"/>
         </c:if>
 
         <div class="dashboard-widgets">
             <section class="widget">
-                <h3>Minhas Atividades</h3>
+                <h3><fmt:message key="dashboard.tester.widget.myActivities.title"/></h3>
                 <ul>
-                    <li><a href="${pageContext.request.contextPath}/testador/sessoes?action=novo">Cadastrar Nova Sessão de Teste</a> (R7)</li>
-                    <li><a href="${pageContext.request.contextPath}/testador/minhasSessoes">Gerenciar Minhas Sessões de Teste</a> (R8, R9)</li>
+                    <li><a href="${pageContext.request.contextPath}/testador/sessoes?action=novo"><fmt:message key="dashboard.tester.widget.myActivities.item1"/></a> (R7)</li>
+                    <li><a href="${pageContext.request.contextPath}/testador/minhasSessoes"><fmt:message key="dashboard.tester.widget.myActivities.item2"/></a> (R8, R9)</li>
                 </ul>
             </section>
 
             <section class="widget">
-                <h3>Recursos</h3>
+                <h3><fmt:message key="dashboard.tester.widget.resources.title"/></h3>
                 <ul>
-                    <li><a href="${pageContext.request.contextPath}/testador/meusProjetos">Visualizar Projetos Atribuídos</a> (R4)</li>
-                    <li><a href="#">Visualizar Todas as Estratégias</a> (R6)</li>
+                    <li><a href="${pageContext.request.contextPath}/testador/meusProjetos"><fmt:message key="dashboard.tester.widget.resources.item1"/></a> (R4)</li>
+                    <li><a href="#"><fmt:message key="dashboard.tester.widget.resources.item2"/></a> (R6)</li>
                 </ul>
             </section>
 
             <section class="widget">
-                <h3>Meu Perfil</h3>
+                <h3><fmt:message key="dashboard.tester.widget.myProfile.title"/></h3>
                 <ul>
-                    <li><a href="#">Editar Meu Cadastro</a></li>
-                    <li><a href="#">Alterar Senha</a></li>
+                    <li><a href="#"><fmt:message key="dashboard.tester.widget.myProfile.item1"/></a></li>
+                    <li><a href="#"><fmt:message key="dashboard.tester.widget.myProfile.item2"/></a></li>
                 </ul>
             </section>
         </div>
@@ -84,7 +92,13 @@
 </div>
 
 <footer class="footer">
-    <p>&copy; <jsp:useBean id="javaDate" class="java.util.Date" /><c:set var="currentYear"><jsp:getProperty name="javaDate" property="year" /></c:set><c:out value="${currentYear + 1900}"/> Game Tester System. Todos os direitos reservados.</p>
+    <jsp:useBean id="javaDate" class="java.util.Date" />
+    <c:set var="currentYear" value="${1900 + javaDate.year}"/>
+    <p>
+        <fmt:message key="footer.copyright">
+            <fmt:param value="${currentYear}"/>
+        </fmt:message>
+    </p>
 </footer>
 
 </body>

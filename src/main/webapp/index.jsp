@@ -1,13 +1,19 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%--<%@ taglib uri="http://jakarta.sun.com/jsp/jstl/core" prefix="c" %>--%>
-<%@ taglib uri="jakarta.tags.core" prefix="c" %>
+<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+
+<%-- AQUI: Defina o locale para Português do Brasil --%>
+<fmt:setLocale value="en" />
+<%-- 2. Definir o arquivo de mensagens a ser usado na página --%>
+<fmt:setBundle basename="message"/>
 
 <!DOCTYPE html>
-<html lang="pt-BR">
+<%-- Opcional: Definir o idioma da página dinamicamente --%>
+<html lang="${not empty sessionScope.userLocale ? sessionScope.userLocale.language : 'pt-BR'}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bem-vindo ao Game Tester System</title>
+    <title><fmt:message key="welcome.page.title"/></title>
     <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/estiloPrincipal.css">
     <style>
         body {
@@ -58,18 +64,6 @@
             transition: background-color 0.3s ease, transform 0.2s ease;
         }
 
-        .btn-strat {
-            display: inline-block;
-            padding: 15px 35px;
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #fff;
-            background-color: #007bff;
-            border: none;
-            border-radius: 8px;
-            text-decoration: none;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
         .btn-login:hover, .btn-login:focus {
             background-color: #0056b3; /* Azul mais escuro no hover */
             transform: translateY(-2px); /* Efeito sutil de elevação */
@@ -85,21 +79,26 @@
 </head>
 <body>
 <div class="container">
-    <h1>Game Tester System</h1>
+    <%-- 4. Substituir os textos do corpo pela chave --%>
+    <h1><fmt:message key="welcome.page.header"/></h1>
     <p>
-        Bem-vindo à sua plataforma dedicada para gerenciamento e execução de testes exploratórios em jogos digitais.
-        Organize seus projetos, defina estratégias e acompanhe suas sessões de teste de forma eficiente.
+        <fmt:message key="welcome.page.paragraph"/>
     </p>
-    <a href="${pageContext.request.contextPath}/login.jsp" class="btn-login">Acessar o Sistema</a>
-    <a href="${pageContext.request.contextPath}/estrategias-publicas" class="btn-strat">Ver Estratégias Públicas</a>
+    <a href="${pageContext.request.contextPath}/login.jsp" class="btn-login"><fmt:message key="welcome.page.button.access"/></a>
+    <a href="${pageContext.request.contextPath}/estrategias-publicas" class="btn-secondary"><fmt:message key="welcome.page.button.publicStrategies"/></a>
 </div>
 
 <div class="footer">
-    <p>&copy; ${currentYear} Game Tester System. Todos os direitos reservados.</p>
-    <%-- Para obter o ano corrente dinamicamente (opcional) --%>
+    <%-- Bloco para obter o ano corrente de forma mais limpa --%>
     <jsp:useBean id="date" class="java.util.Date" />
-    <c:set var="currentYear"><jsp:getProperty name="date" property="year" /></c:set>
-    <c:set var="currentYear" value="${currentYear + 1900}"/>
+    <c:set var="currentYear" value="${1900 + date.year}"/>
+
+    <%-- 5. Usar fmt:message com fmt:param para o rodapé --%>
+    <p>
+        <fmt:message key="footer.copyright">
+            <fmt:param value="${currentYear}"/>
+        </fmt:message>
+    </p>
 </div>
 </body>
 </html>

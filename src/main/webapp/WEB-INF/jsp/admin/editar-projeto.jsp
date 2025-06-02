@@ -1,19 +1,27 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib uri="jakarta.tags.core" prefix="c" %>
-<%@ taglib uri="jakarta.tags.fmt" prefix="fmt" %> <%-- Para formatar a data de criação, se for exibi-la --%>
+<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 
-<%-- Proteção: Redireciona para login se não for admin logado --%>
+<%-- AQUI: Defina o locale para Português do Brasil --%>
+<fmt:setLocale value="pt" />
+<%-- Define o bundle de mensagens que será usado nesta página --%>
+<fmt:setBundle basename="message"/>
+
+<%--
+  Proteção: Redireciona para login se não for admin.
+  MUDANÇA CRÍTICA: Passamos uma CHAVE de erro ('erroChave'), não o texto completo.
+--%>
 <c:if test="${empty sessionScope.usuarioLogado || sessionScope.usuarioLogado.tipoPerfil != 'ADMINISTRADOR'}">
     <c:redirect url="${pageContext.request.contextPath}/login.jsp">
-        <c:param name="erro" value="Acesso não autorizado. Faça login como administrador."/>
+        <c:param name="erroChave" value="auth.error.unauthorizedAdmin"/>
     </c:redirect>
 </c:if>
 
 <!DOCTYPE html>
-<html>
+<html lang="${not empty sessionScope.userLocale ? sessionScope.userLocale.language : 'pt-BR'}">
 <head>
     <meta charset="UTF-8">
-    <title>Editar Projeto - Painel do Administrador</title>
+    <title><fmt:message key="project.edit.pageTitle"/></title>
     <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/estiloPrincipal.css">
     <style>
         /* Estilos similares ao cadastrar-projeto.jsp, ajuste conforme necessidade */
@@ -34,50 +42,49 @@
 </head>
 <body>
 <div class="container">
-    <h1>Editar Projeto</h1>
+    <h1><fmt:message key="project.edit.header"/></h1>
 
+    <%-- O Servlet deve passar a CHAVE do erro de validação --%>
     <c:if test="${not empty mensagemErroFormProjeto}">
-        <p class="message error"><c:out value="${mensagemErroFormProjeto}"/></p>
+        <p class="message error"><fmt:message key="${mensagemErroFormProjeto}"/></p>
     </c:if>
 
     <c:if test="${empty projeto}">
-        <p class="message error">Projeto não encontrado ou ID inválido para edição.</p>
+        <p class="message error"><fmt:message key="project.edit.error.notFound"/></p>
         <div class="navigation-links">
-            <a href="${pageContext.request.contextPath}/admin/gerenciarProjetos">Voltar para Gerenciar Projetos</a>
+            <a href="${pageContext.request.contextPath}/admin/gerenciarProjetos"><fmt:message key="project.edit.link.backToManage"/></a>
         </div>
     </c:if>
 
     <c:if test="${not empty projeto}">
         <form action="${pageContext.request.contextPath}/admin/editarProjeto" method="post">
-                <%-- Campo oculto para enviar o ID do projeto que está sendo editado --%>
             <input type="hidden" name="idProjeto" value="<c:out value='${projeto.id}'/>">
 
             <div>
-                <label>ID do Projeto:</label>
+                <label><fmt:message key="project.edit.label.id"/></label>
                 <div class="info-field"><c:out value='${projeto.id}'/></div>
             </div>
             <div>
-                <label for="nomeProjeto">Nome do Projeto:</label>
+                <label for="nomeProjeto"><fmt:message key="project.edit.label.name"/></label>
                 <input type="text" id="nomeProjeto" name="nomeProjeto" value="<c:out value='${projeto.nome}'/>" required>
             </div>
             <div>
-                <label for="descricaoProjeto">Descrição do Projeto (opcional):</label>
+                <label for="descricaoProjeto"><fmt:message key="project.edit.label.description"/></label>
                 <textarea id="descricaoProjeto" name="descricaoProjeto"><c:out value='${projeto.descricao}'/></textarea>
             </div>
             <div>
-                <label>Data de Criação:</label>
+                <label><fmt:message key="project.edit.label.creationDate"/></label>
                 <div class="info-field">
-                    <fmt:formatDate value="${projeto.dataCriacao}" pattern="dd/MM/yyyy HH:mm:ss"/>
+                        <%-- A tag <fmt:formatDate> já lida com a localização se usarmos dateStyle/timeStyle --%>
+                    <fmt:formatDate value="${projeto.dataCriacao}" dateStyle="medium" timeStyle="medium"/>
                 </div>
             </div>
 
-                <%-- A gestão de membros será implementada posteriormente. --%>
-
-            <button type="submit">Salvar Alterações</button>
+            <button type="submit"><fmt:message key="project.edit.button.save"/></button>
         </form>
 
         <div class="navigation-links">
-            <a href="${pageContext.request.contextPath}/admin/gerenciarProjetos">Cancelar e Voltar</a>
+            <a href="${pageContext.request.contextPath}/admin/gerenciarProjetos"><fmt:message key="project.edit.link.cancelAndBack"/></a>
         </div>
     </c:if>
 </div>

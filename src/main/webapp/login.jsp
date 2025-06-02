@@ -1,12 +1,18 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%-- <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %> <%-- Para usar JSTL, se necessário --%>
-<%@ taglib uri="jakarta.tags.core" prefix="c" %>
+<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+
+<%-- AQUI: Defina o locale para Português do Brasil --%>
+<fmt:setLocale value="en" />
+<%-- 2. Definir o Resource Bundle que será usado na página --%>
+<fmt:setBundle basename="message" />
 
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Login - Game Tester System</title>
+    <%-- 3. Usar a tag fmt:message para o título --%>
+    <title><fmt:message key="login.title"/></title>
     <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/estiloPrincipal.css">
     <style>
         body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 80vh; background-color: #f4f4f4; margin: 0; }
@@ -22,29 +28,27 @@
 </head>
 <body>
 <div class="login-container">
-    <h2>Login</h2>
+    <h2><fmt:message key="login.header"/></h2>
 
-    <%-- Exibe mensagem de erro, se houver --%>
     <c:if test="${not empty erroLogin}">
-        <p class="error-message">${erroLogin}</p>
+        <p class="error-message"><fmt:message key="${erroLogin}"/></p>
     </c:if>
 
-    <%-- Exibe mensagem de logout, se houver --%>
     <c:if test="${param.logout == 'true'}">
-        <p class="logout-message">Logout realizado com sucesso!</p>
+        <p class="logout-message"><fmt:message key="login.message.logout.success"/></p>
     </c:if>
 
     <form method="POST" action="${pageContext.request.contextPath}/login">
         <div>
-            <label for="email">Email:</label>
+            <label for="email"><fmt:message key="login.label.email"/></label>
             <input type="email" id="email" name="email" required>
         </div>
         <div>
-            <label for="senha">Senha:</label>
+            <label for="senha"><fmt:message key="login.label.password"/></label>
             <input type="password" id="senha" name="senha" required>
         </div>
         <div>
-            <button type="submit">Entrar</button>
+            <button type="submit"><fmt:message key="login.button.submit"/></button>
         </div>
     </form>
 </div>

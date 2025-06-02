@@ -1,18 +1,28 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib uri="jakarta.tags.core" prefix="c" %>
+<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 
-<%-- Proteção: Redireciona para login se não for admin logado --%>
+<%-- AQUI: Defina o locale para Português do Brasil --%>
+<fmt:setLocale value="pt" />
+<%-- Define o bundle de mensagens que será usado nesta página --%>
+<fmt:setBundle basename="message"/>
+
+<%--
+  Proteção: Redireciona para login se não for admin.
+  MUDANÇA CRÍTICA: Passamos uma CHAVE de erro ('erroChave'), não o texto completo.
+  A página de login deverá ser capaz de ler esta chave.
+--%>
 <c:if test="${empty sessionScope.usuarioLogado || sessionScope.usuarioLogado.tipoPerfil != 'ADMINISTRADOR'}">
     <c:redirect url="${pageContext.request.contextPath}/login.jsp">
-        <c:param name="erro" value="Acesso não autorizado. Faça login como administrador."/>
+        <c:param name="erroChave" value="auth.error.unauthorizedAdmin"/>
     </c:redirect>
 </c:if>
 
 <!DOCTYPE html>
-<html>
+<html lang="${not empty sessionScope.userLocale ? sessionScope.userLocale.language : 'pt-BR'}">
 <head>
     <meta charset="UTF-8">
-    <title>Cadastrar Novo Projeto - Painel do Administrador</title>
+    <title><fmt:message key="project.create.pageTitle"/></title>
     <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/estiloPrincipal.css">
     <style>
         /* Estilos similares ao cadastrar-estrategia.jsp, ajuste conforme necessidade */
@@ -33,34 +43,35 @@
 </head>
 <body>
 <div class="container">
-    <h1>Cadastrar Novo Projeto</h1>
+    <h1><fmt:message key="project.create.header"/></h1>
 
+    <%--
+      Para as mensagens de sucesso/erro, o Servlet agora nos envia a CHAVE da mensagem.
+      Usamos a tag <fmt:message> para exibir o texto correspondente.
+    --%>
     <c:if test="${not empty mensagemSucessoProjeto}">
-        <p class="message success"><c:out value="${mensagemSucessoProjeto}"/></p>
+        <p class="message success"><fmt:message key="${mensagemSucessoProjeto}"/></p>
     </c:if>
     <c:if test="${not empty mensagemErroProjeto}">
-        <p class="message error"><c:out value="${mensagemErroProjeto}"/></p>
+        <p class="message error"><fmt:message key="${mensagemErroProjeto}"/></p>
     </c:if>
 
     <form action="${pageContext.request.contextPath}/admin/cadastrarProjeto" method="post">
         <div>
-            <label for="nomeProjeto">Nome do Projeto:</label>
+            <label for="nomeProjeto"><fmt:message key="project.create.label.name"/></label>
             <input type="text" id="nomeProjeto" name="nomeProjeto" value="<c:out value='${valorNomeProjeto}'/>" required>
         </div>
         <div>
-            <label for="descricaoProjeto">Descrição do Projeto (opcional):</label>
+            <label for="descricaoProjeto"><fmt:message key="project.create.label.description"/></label>
             <textarea id="descricaoProjeto" name="descricaoProjeto"><c:out value='${valorDescricaoProjeto}'/></textarea>
         </div>
 
-        <%-- A data de criação é gerada pelo sistema e não é um campo de entrada. --%>
-        <%-- A gestão de membros será implementada posteriormente. --%>
-
-        <button type="submit">Cadastrar Projeto</button>
+        <button type="submit"><fmt:message key="project.create.button.submit"/></button>
     </form>
 
     <div class="navigation-links">
-        <a href="${pageContext.request.contextPath}/admin/gerenciarProjetos">Voltar para Gerenciar Projetos</a>
-        <a href="${pageContext.request.contextPath}/admin/dashboard.jsp">Voltar ao Painel do Administrador</a>
+        <a href="${pageContext.request.contextPath}/admin/gerenciarProjetos"><fmt:message key="project.create.link.backToManage"/></a>
+        <a href="${pageContext.request.contextPath}/admin/dashboard.jsp"><fmt:message key="project.create.link.backToDashboard"/></a>
     </div>
 </div>
 </body>
