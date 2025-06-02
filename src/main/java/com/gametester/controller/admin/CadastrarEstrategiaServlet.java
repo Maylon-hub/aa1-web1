@@ -1,4 +1,4 @@
-package com.gametester.controller; // Ou o seu pacote de controllers
+package com.gametester.controller.admin; // Ou o seu pacote de controllers
 
 import com.gametester.dao.EstrategiaDAO;
 import com.gametester.model.Estrategia;

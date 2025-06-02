@@ -1,5 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%--<%@ taglib uri="http://jakarta.sun.com/jsp/jstl/core" prefix="c" %> &lt;%&ndash; URI ATUALIZADA &ndash;%&gt;--%>
+<%@ taglib uri="jakarta.tags.core" prefix="c" %>
+
 
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -17,7 +19,7 @@
             <ul>
                 <%-- Adicione 'active' à classe do link da página atual se quiser destacar --%>
                 <li><a href="${pageContext.request.contextPath}/admin/dashboard.jsp" class="active">Dashboard</a></li>
-                <li><a href="${pageContext.request.contextPath}/admin/estrategias?action=listar">Gerenciar Estratégias</a></li>
+                <li><a href="${pageContext.request.contextPath}/admin/gerenciarEstrategias">Gerenciar Estratégias</a></li>
                 <li><a href="${pageContext.request.contextPath}/admin/gerenciarProjetos">Gerenciar Projetos</a></li>
                 <li><a href="${pageContext.request.contextPath}/admin/gerenciarUsuarios">Gerenciar Usuários</a></li>
                 <li><a href="#">Sessões de Teste (Admin)</a></li> <%-- Placeholder --%>
@@ -59,9 +61,11 @@
             <section class="widget">
                 <h3>Gerenciamento Principal</h3>
                 <ul>
-                    <li><a href="${pageContext.request.contextPath}/admin/estrategias?action=listar">Gerenciar Estratégias</a> (R5)</li>
+                    <li><a href="${pageContext.request.contextPath}/admin/gerenciarEstrategias">Gerenciar Estratégias</a> (R5)</li>
                     <li><a href="${pageContext.request.contextPath}/admin/gerenciarProjetos">Gerenciar Projetos</a> (R3)</li>
                     <li><a href="${pageContext.request.contextPath}/admin/gerenciarUsuarios">Gerenciar Usuários</a> (R1, R2)</li>
+                    <li><a href="${pageContext.request.contextPath}/estrategias">Listar Estratégias</a> (R6)</li>
+
                 </ul>
             </section>
 

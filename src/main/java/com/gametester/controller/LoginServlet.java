@@ -1,4 +1,4 @@
-package com.gametester.controller; // Ou o seu pacote de controllers
+package com.gametester.controller;
 
 import com.gametester.dao.UsuarioDAO;
 import com.gametester.model.Usuario;
@@ -10,84 +10,93 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.sql.SQLException; // Importe SQLException
 
-@WebServlet("/login") // Define a URL que acionará este Servlet
+@WebServlet("/login")
 public class LoginServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private UsuarioDAO usuarioDAO;
 
+    @Override
     public void init() {
         usuarioDAO = new UsuarioDAO();
     }
 
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String email = request.getParameter("email");
         String senha = request.getParameter("senha");
         String mensagemErro = null;
+        Usuario usuario = null; // Declare o usuário aqui para acesso no bloco finally se necessário
 
         // 1. Validação básica
         if (email == null || email.trim().isEmpty() || senha == null || senha.trim().isEmpty()) {
             mensagemErro = "E-mail e senha são obrigatórios.";
         } else {
-            // 2. Autenticar Usuário
-            Usuario usuario = usuarioDAO.buscarUsuarioPorEmail(email.trim());
+            try {
+                // 2. Autenticar Usuário
+                usuario = usuarioDAO.buscarUsuarioPorEmail(email.trim()); // Esta linha pode lançar SQLException
 
-            if (usuario != null) {
-                // TODO: Implementar HASHING DE SENHA AQUI!
-                // Por enquanto, comparação direta (NÃO SEGURO PARA PRODUÇÃO)
-                if (senha.equals(usuario.getSenha())) { // << CUIDADO! Comparação direta
-                    // 3. Autenticação bem-sucedida: Criar Sessão
-                    HttpSession session = request.getSession();
-                    session.setAttribute("usuarioLogado", usuario); // Armazena o objeto Usuario na sessão
+                if (usuario != null) {
+                    // TODO: Implementar HASHING DE SENHA AQUI!
+                    // Por enquanto, comparação direta (NÃO SEGURO PARA PRODUÇÃO)
+                    if (senha.equals(usuario.getSenha())) { // CUIDADO! Comparação direta
+                        // 3. Autenticação bem-sucedida: Criar Sessão
+                        HttpSession session = request.getSession();
+                        session.setAttribute("usuarioLogado", usuario);
 
-                    // 4. Redirecionar com base no tipo de perfil
-                    String tipoPerfil = usuario.getTipoPerfil();
-                    if ("ADMINISTRADOR".equals(tipoPerfil)) {
-                        response.sendRedirect(request.getContextPath() + "/admin/dashboard.jsp"); // Exemplo de URL
-                    } else if ("TESTADOR".equals(tipoPerfil)) {
-                        response.sendRedirect(request.getContextPath() + "/testador/dashboard.jsp"); // Exemplo de URL
-                    } else if ("VISITANTE".equals(tipoPerfil)) {
-                        response.sendRedirect(request.getContextPath() + "/visitante/dashboard.jsp"); // Exemplo de URL
+                        // 4. Redirecionar com base no tipo de perfil
+                        String tipoPerfil = usuario.getTipoPerfil();
+                        if ("ADMINISTRADOR".equals(tipoPerfil)) {
+                            response.sendRedirect(request.getContextPath() + "/admin/dashboard.jsp");
+                        } else if ("TESTADOR".equals(tipoPerfil)) {
+                            response.sendRedirect(request.getContextPath() + "/testador/dashboard.jsp");
+                        } else if ("VISITANTE".equals(tipoPerfil)) {
+                            // Visitantes geralmente não fazem login para um dashboard, mas se for o caso:
+                            response.sendRedirect(request.getContextPath() + "/index.jsp"); // Ou uma página inicial para visitantes
+                        } else {
+                            mensagemErro = "Tipo de perfil não autorizado para login.";
+                        }
+                        // Se houve redirecionamento bem-sucedido, não processar mais nada
+                        if (response.isCommitted()) { // Verifica se o redirect já foi enviado
+                            return;
+                        }
+                    } else {
+                        // Senha incorreta
+                        mensagemErro = "E-mail ou senha inválidos.";
                     }
-                    else {
-                        // Perfil desconhecido ou não autorizado para login direto (ex: VISITANTE)
-                        mensagemErro = "Tipo de perfil não autorizado para login.";
-                        request.setAttribute("erroLogin", mensagemErro);
-                        request.getRequestDispatcher("login.jsp").forward(request, response);
-                    }
-                    return; // Importante para não processar mais nada após o redirect
                 } else {
-                    // Senha incorreta
+                    // Usuário não encontrado
                     mensagemErro = "E-mail ou senha inválidos.";
                 }
-            } else {
-                // Usuário não encontrado
-                mensagemErro = "E-mail ou senha inválidos.";
+            } catch (SQLException e) {
+                e.printStackTrace(); // Loga o erro no console do servidor
+                mensagemErro = "Erro ao processar o login. Por favor, tente novamente mais tarde.";
+                // Opcional: você pode querer mostrar e.getMessage() se for seguro e útil para o admin,
+                // mas para o usuário final, uma mensagem genérica é melhor.
             }
         }
 
-        // 5. Falha na autenticação ou validação
+        // 5. Falha na autenticação, validação ou erro de SQL
         if (mensagemErro != null) {
             request.setAttribute("erroLogin", mensagemErro);
             request.getRequestDispatcher("login.jsp").forward(request, response);
         }
     }
 
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // O GET para /login pode simplesmente exibir a página de login
-        // Ou, pode ser usado para invalidar a sessão (logout), se você adicionar um parâmetro "action=logout"
         String action = request.getParameter("action");
 
         if ("logout".equals(action)) {
-            HttpSession session = request.getSession(false); // Não cria uma nova sessão se não existir
+            HttpSession session = request.getSession(false);
             if (session != null) {
-                session.invalidate(); // Invalida a sessão
+                session.invalidate();
             }
-            response.sendRedirect(request.getContextPath() + "/login.jsp?logout=true"); // Redireciona para login com msg opcional
+            response.sendRedirect(request.getContextPath() + "/login.jsp?logout=true");
         } else {
-            // Por padrão, mostra a página de login
             request.getRequestDispatcher("login.jsp").forward(request, response);
         }
     }

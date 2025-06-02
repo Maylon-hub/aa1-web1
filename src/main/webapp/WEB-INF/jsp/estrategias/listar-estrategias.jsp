@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%-- <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %> --%>
+<%@ taglib uri="jakarta.tags.core" prefix="c" %>
 
 <!DOCTYPE html>
 <html>
@@ -63,7 +64,7 @@
     <div class="navigation-links">
         <%-- Link para voltar ao dashboard do admin, se o usuário estiver logado como admin --%>
         <c:if test="${sessionScope.usuarioLogado.tipoPerfil == 'ADMINISTRADOR'}">
-            <a href="${pageContext.request.contextPath}/WEB-INF/jsp/admin/dashboard.jsp">Voltar ao Dashboard do Admin</a>
+            <a href="${pageContext.request.contextPath}/admin/dashboard.jsp">Voltar ao Dashboard do Admin</a>
         </c:if>
         <%-- Link para a página inicial ou outra página pública --%>
         <a href="${pageContext.request.contextPath}/index.jsp">Página Inicial</a>
