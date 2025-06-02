@@ -176,9 +176,7 @@ public class BugDAO {
         return bugs;
     }
 
-    // O método main já está bem estruturado para testes e trata SQLException.
-    // Apenas garanta que os outros DAOs (ProjetoDAO, UsuarioDAO, etc.) também propaguem SQLException
-    // e que seus métodos de inserção atualizem os IDs nos objetos passados ou retornem os IDs.
+
     public static void main(String[] args) {
         BugDAO bugDAO = new BugDAO();
         SessaoTesteDAO sessaoTesteDAO = new SessaoTesteDAO();
@@ -191,7 +189,7 @@ public class BugDAO {
         Usuario testadorBug = null;
         Estrategia estrategiaBug = null;
         SessaoTeste sessaoParaBug = null;
-        Bug novoBug = null; // Declarar aqui para usar no finally se necessário
+        Bug novoBug = null;
 
         try {
             System.out.println("--- Criando pré-requisitos para Bug ---");
@@ -318,12 +316,7 @@ public class BugDAO {
                     }
                 }
                 if (testadorBug != null && testadorBug.getId() > 0) {
-                    // Cuidado ao excluir usuários que podem estar em outras sessões/projetos
-                    // Para este teste, vamos comentar a exclusão do usuário para evitar falhas
-                    // se ele for usado em outros testes ou se houver restrições de FK.
-                    // if (usuarioDAO.excluirUsuario(testadorBug.getId())) {
-                    //     System.out.println("Testador de Bug removido: " + testadorBug.getId());
-                    // }
+
                 }
             } catch (SQLException ex) {
                 System.err.println("!!!!!! Erro de SQL durante a limpeza no main do BugDAO: " + ex.getMessage());

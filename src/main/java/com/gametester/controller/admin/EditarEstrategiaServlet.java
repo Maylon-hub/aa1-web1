@@ -84,8 +84,6 @@ public class EditarEstrategiaServlet extends HttpServlet {
         String descricao = request.getParameter("descricao");
         String exemplos = request.getParameter("exemplos"); // Conteúdo como está no textarea
         String dicas = request.getParameter("dicas");
-        // Se você reintroduziu um campo separado para imagemPath na edição no JSP, pegue-o aqui.
-        // String imagemPathRequest = request.getParameter("imagemPath");
 
         int estrategiaId = 0;
 
@@ -126,17 +124,6 @@ public class EditarEstrategiaServlet extends HttpServlet {
         estrategiaAtualizada.setId(estrategiaId);
         estrategiaAtualizada.setNome(nome.trim());
         estrategiaAtualizada.setDescricao(descricao.trim());
-
-        // Lógica para exemplos (e imagemPath, se você estiver tratando separadamente na edição)
-        // Mantendo a lógica de que 'exemplos' pode conter a referência da imagem, como no cadastro.
-        // Se você tivesse um campo imagemPath separado no form de edição, a lógica seria:
-        // String exemplosFinais = exemplos != null ? exemplos.trim() : "";
-        // if (imagemPathRequest != null && !imagemPathRequest.trim().isEmpty()) {
-        //     if (!exemplosFinais.isEmpty()) { exemplosFinais += "\n"; }
-        //     exemplosFinais += "[Imagem: " + imagemPathRequest.trim() + "]";
-        // }
-        // estrategiaAtualizada.setExemplos(exemplosFinais.isEmpty() ? null : exemplosFinais);
-        // Por enquanto, simplesmente pegamos o que veio do textarea de exemplos:
         estrategiaAtualizada.setExemplos(exemplos != null ? exemplos.trim() : null);
         estrategiaAtualizada.setDicas(dicas != null ? dicas.trim() : null);
 

@@ -1,4 +1,4 @@
-package com.gametester.controller.testador;
+/*package com.gametester.controller.testador;
 
 import com.gametester.dao.EstrategiaDAO;
 import com.gametester.dao.ProjetoDAO;
@@ -138,4 +138,4 @@ public class TestadorSessaoServlet extends HttpServlet {
             e.printStackTrace();
         }
     }
-}
+}*/

@@ -13,7 +13,6 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.sql.SQLException;
-// A data de criação será gerada pelo sistema (no DAO ou aqui)
 // import java.sql.Timestamp;
 
 @WebServlet("/admin/cadastrarProjeto")

@@ -31,31 +31,42 @@ public class GerenciarProjetosServlet extends HttpServlet {
             throws ServletException, IOException {
 
         HttpSession session = request.getSession(false);
-        // Proteção: Somente administradores podem acessar
         if (session == null || session.getAttribute("usuarioLogado") == null ||
                 !"ADMINISTRADOR".equals(((Usuario) session.getAttribute("usuarioLogado")).getTipoPerfil())) {
             response.sendRedirect(request.getContextPath() + "/login.jsp?erro=" + java.net.URLEncoder.encode("Acesso restrito a administradores.", "UTF-8"));
             return;
         }
 
-        List<Projeto> listaDeProjetos = new ArrayList<>(); // Inicializa com lista vazia
-        try {
-            listaDeProjetos = projetoDAO.listarTodosProjetos();
-            request.setAttribute("listaProjetos", listaDeProjetos);
-        } catch (SQLException e) {
-            e.printStackTrace(); // Registra o erro no log do servidor
-            request.setAttribute("mensagemErro", "Erro ao carregar a lista de projetos do banco de dados: " + e.getMessage());
+        String sortField = request.getParameter("sort");
+        String sortOrder = request.getParameter("order");
+
+        // Define padrões se os parâmetros não forem fornecidos ou forem inválidos
+        if (sortField == null || !List.of("id", "nome", "data_criacao").contains(sortField.toLowerCase())) {
+            sortField = "nome";
+        }
+        if (sortOrder == null || !List.of("asc", "desc").contains(sortOrder.toLowerCase())) {
+            sortOrder = "asc";
         }
 
-        // Encaminha para a página JSP que exibirá a interface de gerenciamento de projetos
+        List<Projeto> listaDeProjetos = new ArrayList<>();
+        try {
+            listaDeProjetos = projetoDAO.listarTodosProjetos(sortField, sortOrder);
+            request.setAttribute("listaProjetos", listaDeProjetos);
+
+            request.setAttribute("currentSortField", sortField);
+            request.setAttribute("currentSortOrder", sortOrder);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            request.setAttribute("mensagemErro", "Erro ao carregar a lista de projetos: " + e.getMessage());
+        }
+
         request.getRequestDispatcher("/WEB-INF/jsp/admin/gerenciar-projetos.jsp").forward(request, response);
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Se houver ações de POST nesta página (ex: um filtro para a lista), trate aqui.
-        // Por enquanto, apenas redireciona para o doGet.
-        doGet(request, response);
+        doGet(request, response); // Ações de POST não são esperadas aqui, apenas recarrega a lista.
     }
 }

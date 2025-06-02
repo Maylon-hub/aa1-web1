@@ -31,7 +31,7 @@ public class PublicEstrategiaServlet extends HttpServlet {
             RequestDispatcher dispatcher = request.getRequestDispatcher("/publico/listaEstrategias.jsp");
             dispatcher.forward(request, response);
         } catch (Exception e) {
-            // Tratar exceção, talvez redirecionar para uma página de erro genérica
+            // Tratar exceção, redirecionar para uma página de erro genérica
             e.printStackTrace(); // Logar o erro
             request.setAttribute("mensagemErro", "Erro ao carregar estratégias.");
             RequestDispatcher dispatcher = request.getRequestDispatcher("/publico/paginaErroPublica.jsp"); // Crie esta página

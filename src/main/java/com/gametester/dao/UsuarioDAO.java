@@ -2,9 +2,7 @@ package com.gametester.dao;
 
 import com.gametester.model.Usuario;
 import com.gametester.util.ConexaoDB;
-// Adicione esta importação se ainda não existir
-import org.mindrot.jbcrypt.BCrypt; // Para hashing de senha (opcional nesta fase, mas recomendado)
-
+// import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -16,21 +14,16 @@ import java.util.List;
 
 public class UsuarioDAO {
 
-    // Método para verificar senha com hash (se você implementar hashing)
-    // public boolean verificarSenha(String senhaPlana, String hashDaSenha) {
-    //     return BCrypt.checkpw(senhaPlana, hashDaSenha);
-    // }
-
-
-    // Seu método inserirUsuario precisa ser capaz de lidar com o tipo de perfil
-    // e idealmente faria o hash da senha.
+    /**
+     * Insere um novo usuário no banco de dados.
+     * A senha fornecida no objeto Usuario já deve estar "hasheada" (ex: com BCrypt).
+     * O ID gerado é atualizado no objeto Usuario passado como argumento.
+     *
+     * @param usuario O objeto Usuario a ser inserido com a senha já hasheada.
+     * @return O objeto Usuario atualizado com o ID definido pelo banco.
+     * @throws SQLException Se ocorrer um erro de banco de dados, incluindo e-mail duplicado.
+     */
     public Usuario inserirUsuario(Usuario usuario) throws SQLException {
-        // Nota: O ideal é fazer o hash da senha ANTES de chegar no DAO, ou aqui dentro.
-        // String senhaComHash = BCrypt.hashpw(usuario.getSenha(), BCrypt.gensalt());
-        // Para simplificar por enquanto, vamos assumir que a senha já está pronta para o BD
-        // ou que o hash será adicionado depois.
-        // Se não estiver usando RETURNING para todos os campos, o objeto pode não ser totalmente atualizado aqui.
-
         String sql = "INSERT INTO Usuario (nome, email, senha, tipo_perfil) VALUES (?, ?, ?, ?) RETURNING id";
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -39,39 +32,49 @@ public class UsuarioDAO {
         try {
             conn = ConexaoDB.getConnection();
             stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+
             stmt.setString(1, usuario.getNome());
-            stmt.setString(2, usuario.getEmail());
-            stmt.setString(3, usuario.getSenha()); // Idealmente, aqui seria o hash da senha
+            stmt.setString(2, usuario.getEmail().toLowerCase()); // Armazena email em minúsculas
+            stmt.setString(3, usuario.getSenha()); // Senha com HASH
             stmt.setString(4, usuario.getTipoPerfil());
 
-            // Para PostgreSQL com RETURNING id:
-            rs = stmt.executeQuery();
-            if (rs.next()) {
-                usuario.setId(rs.getInt("id"));
-            } else {
-                // Fallback para getGeneratedKeys se RETURNING não for usado ou falhar em popular o ID
-                // (Pouco provável com RETURNING id e executeQuery)
-                System.err.println("Não foi possível obter o ID do usuário via RETURNING. Verifique a query ou o driver.");
-                // throw new SQLException("Falha ao inserir usuário, não foi possível obter o ID gerado.");
-            }
+            int rowsAffected = stmt.executeUpdate();
 
-        } catch (SQLException e) {
-            // R33: tratar todos os erros possíveis (cadastro duplicado [email])
-            if (e.getMessage().toLowerCase().contains("unique constraint") || e.getMessage().toLowerCase().contains("duplicate key")) {
-                throw new SQLException("Erro ao inserir usuário: O e-mail '" + usuario.getEmail() + "' já está cadastrado.", e);
+            if (rowsAffected > 0) {
+                rs = stmt.getGeneratedKeys();
+                if (rs != null && rs.next()) {
+                    usuario.setId(rs.getInt(1));
+                } else {
+                    System.err.println("DAO: Inserção de Usuario afetou " + rowsAffected + " linha(s), mas não foi possível obter o ID gerado.");
+                    throw new SQLException("Falha ao inserir usuário: ID não pôde ser recuperado após a inserção.");
+                }
+            } else {
+                System.err.println("DAO: Nenhuma linha afetada pela inserção do usuário: " + usuario.getEmail());
+                throw new SQLException("Falha ao inserir usuário: Nenhuma linha foi afetada no banco de dados.");
             }
-            System.err.println("Erro ao inserir usuário: " + e.getMessage());
+        } catch (SQLException e) {
+            // Código de erro padrão do PostgreSQL para unique_violation é 23505
+            if (e.getSQLState() != null && e.getSQLState().equals("23505")) {
+                throw new SQLException("Erro ao inserir usuário: O e-mail '" + usuario.getEmail() + "' já está cadastrado.", e.getSQLState(), e);
+            }
+            System.err.println("DAO: SQLException ao inserir usuário " + usuario.getEmail() + " - Mensagem: " + e.getMessage());
             throw e;
         } finally {
             ConexaoDB.close(rs);
-            if (stmt != null) { try { stmt.close(); } catch (SQLException e_stmt) { e_stmt.printStackTrace(); } }
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException e_stmt) {
+                    System.err.println("DAO: Erro ao fechar PreparedStatement em inserirUsuario: " + e_stmt.getMessage());
+                }
+            }
             ConexaoDB.closeConnection(conn);
         }
-        return usuario; // Retorna o usuário com o ID preenchido
+        return usuario;
     }
 
     public Usuario buscarUsuarioPorEmail(String email) throws SQLException {
-        String sql = "SELECT id, nome, email, senha, tipo_perfil FROM Usuario WHERE email = ?";
+        String sql = "SELECT id, nome, email, senha, tipo_perfil FROM Usuario WHERE lower(email) = lower(?)";
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -79,29 +82,29 @@ public class UsuarioDAO {
         try {
             conn = ConexaoDB.getConnection();
             stmt = conn.prepareStatement(sql);
-            stmt.setString(1, email);
+            stmt.setString(1, email.toLowerCase());
             rs = stmt.executeQuery();
             if (rs.next()) {
                 usuario = new Usuario();
                 usuario.setId(rs.getInt("id"));
                 usuario.setNome(rs.getString("nome"));
                 usuario.setEmail(rs.getString("email"));
-                usuario.setSenha(rs.getString("senha")); // Lembre-se que esta é a senha do BD (hash, idealmente)
+                usuario.setSenha(rs.getString("senha")); // Esta é a senha com HASH do banco
                 usuario.setTipoPerfil(rs.getString("tipo_perfil"));
             }
         } catch (SQLException e) {
-            System.err.println("Erro ao buscar usuário por email: " + e.getMessage());
+            System.err.println("Erro ao buscar usuário por email ("+ email +"): " + e.getMessage());
             throw e;
         } finally {
             ConexaoDB.close(rs);
-            if (stmt != null) { try { stmt.close(); } catch (SQLException e_stmt) { e_stmt.printStackTrace(); } }
+            if (stmt != null) { try { stmt.close(); } catch (SQLException e_stmt) { System.err.println("DAO: Erro ao fechar stmt em buscarUsuarioPorEmail: " + e_stmt.getMessage());} }
             ConexaoDB.closeConnection(conn);
         }
         return usuario;
     }
 
     public Usuario buscarUsuarioPorId(int id) throws SQLException {
-        String sql = "SELECT id, nome, email, senha, tipo_perfil FROM Usuario WHERE id = ?";
+        String sql = "SELECT id, nome, email, tipo_perfil FROM Usuario WHERE id = ?";
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -116,15 +119,15 @@ public class UsuarioDAO {
                 usuario.setId(rs.getInt("id"));
                 usuario.setNome(rs.getString("nome"));
                 usuario.setEmail(rs.getString("email"));
-                usuario.setSenha(rs.getString("senha")); // Senha do BD
+                // A senha não é carregada aqui intencionalmente
                 usuario.setTipoPerfil(rs.getString("tipo_perfil"));
             }
         } catch (SQLException e) {
-            System.err.println("Erro ao buscar usuário por ID: " + e.getMessage());
+            System.err.println("Erro ao buscar usuário por ID ("+id+"): " + e.getMessage());
             throw e;
         } finally {
             ConexaoDB.close(rs);
-            if (stmt != null) { try { stmt.close(); } catch (SQLException e_stmt) { e_stmt.printStackTrace(); } }
+            if (stmt != null) { try { stmt.close(); } catch (SQLException e_stmt) { System.err.println("DAO: Erro ao fechar stmt em buscarUsuarioPorId: " + e_stmt.getMessage());} }
             ConexaoDB.closeConnection(conn);
         }
         return usuario;
@@ -132,7 +135,7 @@ public class UsuarioDAO {
 
     public List<Usuario> listarTodosUsuarios() throws SQLException {
         List<Usuario> usuarios = new ArrayList<>();
-        String sql = "SELECT id, nome, email, tipo_perfil FROM Usuario ORDER BY nome ASC"; // Não buscamos a senha na listagem
+        String sql = "SELECT id, nome, email, tipo_perfil FROM Usuario ORDER BY nome ASC";
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -145,7 +148,6 @@ public class UsuarioDAO {
                 usuario.setId(rs.getInt("id"));
                 usuario.setNome(rs.getString("nome"));
                 usuario.setEmail(rs.getString("email"));
-                // Não setamos a senha aqui por segurança e porque não foi selecionada
                 usuario.setTipoPerfil(rs.getString("tipo_perfil"));
                 usuarios.add(usuario);
             }
@@ -154,23 +156,21 @@ public class UsuarioDAO {
             throw e;
         } finally {
             ConexaoDB.close(rs);
-            if (stmt != null) { try { stmt.close(); } catch (SQLException e_stmt) { e_stmt.printStackTrace(); } }
+            if (stmt != null) { try { stmt.close(); } catch (SQLException e_stmt) { System.err.println("DAO: Erro ao fechar stmt em listarTodosUsuarios: " + e_stmt.getMessage());} }
             ConexaoDB.closeConnection(conn);
         }
         return usuarios;
     }
 
     public boolean atualizarUsuario(Usuario usuario) throws SQLException {
-        // Decide se a senha será atualizada ou não.
-        // Se usuario.getSenha() for nulo ou vazio, não atualizamos a senha.
-        // Se uma nova senha for fornecida, ela deve ser hashada antes de ser salva.
         String sql;
+
         boolean atualizandoSenha = usuario.getSenha() != null && !usuario.getSenha().isEmpty();
 
         if (atualizandoSenha) {
-            sql = "UPDATE Usuario SET nome = ?, email = ?, senha = ?, tipo_perfil = ? WHERE id = ?";
+            sql = "UPDATE Usuario SET nome = ?, email = lower(?), senha = ?, tipo_perfil = ? WHERE id = ?";
         } else {
-            sql = "UPDATE Usuario SET nome = ?, email = ?, tipo_perfil = ? WHERE id = ?";
+            sql = "UPDATE Usuario SET nome = ?, email = lower(?), tipo_perfil = ? WHERE id = ?";
         }
 
         Connection conn = null;
@@ -180,34 +180,58 @@ public class UsuarioDAO {
             conn = ConexaoDB.getConnection();
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, usuario.getNome());
-            stmt.setString(2, usuario.getEmail());
+            stmt.setString(2, usuario.getEmail().toLowerCase());
 
             int paramIndex = 3;
             if (atualizandoSenha) {
-                // String senhaComHash = BCrypt.hashpw(usuario.getSenha(), BCrypt.gensalt());
-                // stmt.setString(paramIndex++, senhaComHash);
-                stmt.setString(paramIndex++, usuario.getSenha()); // Sem hash por enquanto
+                stmt.setString(paramIndex++, usuario.getSenha());
             }
             stmt.setString(paramIndex++, usuario.getTipoPerfil());
             stmt.setInt(paramIndex++, usuario.getId());
 
             rowsAffected = stmt.executeUpdate();
         } catch (SQLException e) {
-            if (e.getMessage().toLowerCase().contains("unique constraint") || e.getMessage().toLowerCase().contains("duplicate key")) {
-                throw new SQLException("Erro ao atualizar usuário: O e-mail '" + usuario.getEmail() + "' já está cadastrado para outro usuário.", e);
+            if (e.getSQLState() != null && e.getSQLState().equals("23505")) { // Email duplicado
+                throw new SQLException("Erro ao atualizar usuário: O e-mail '" + usuario.getEmail() + "' já está cadastrado para outro usuário.", e.getSQLState(), e);
             }
-            System.err.println("Erro ao atualizar usuário: " + e.getMessage());
+            System.err.println("Erro ao atualizar usuário ID " + usuario.getId() + ": " + e.getMessage());
             throw e;
         } finally {
-            if (stmt != null) { try { stmt.close(); } catch (SQLException e_stmt) { e_stmt.printStackTrace(); } }
+            if (stmt != null) { try { stmt.close(); } catch (SQLException e_stmt) { System.err.println("DAO: Erro ao fechar stmt em atualizarUsuario: " + e_stmt.getMessage());} }
+            ConexaoDB.closeConnection(conn);
+        }
+        return rowsAffected > 0;
+    }
+
+    /**
+     * Atualiza apenas a senha de um usuário específico.
+     * @param usuarioId O ID do usuário.
+     * @param novaSenhaComHash A nova senha já processada com hash.
+     * @return true se a senha foi atualizada com sucesso, false caso contrário.
+     * @throws SQLException Se ocorrer um erro de banco de dados.
+     */
+    public boolean atualizarSenhaUsuario(int usuarioId, String novaSenhaComHash) throws SQLException {
+        String sql = "UPDATE Usuario SET senha = ? WHERE id = ?";
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        int rowsAffected = 0;
+        try {
+            conn = ConexaoDB.getConnection();
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, novaSenhaComHash);
+            stmt.setInt(2, usuarioId);
+            rowsAffected = stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("Erro ao atualizar senha para o usuário ID " + usuarioId + ": " + e.getMessage());
+            throw e;
+        } finally {
+            if (stmt != null) { try { stmt.close(); } catch (SQLException e_stmt) { System.err.println("DAO: Erro ao fechar PreparedStatement em atualizarSenhaUsuario: " + e_stmt.getMessage());} }
             ConexaoDB.closeConnection(conn);
         }
         return rowsAffected > 0;
     }
 
     public boolean excluirUsuario(int id) throws SQLException {
-        // Cuidado: O administrador não deve poder excluir a si mesmo se for o último admin.
-        // E um usuário não pode ser excluído se tiver dados relacionados (ex: sessões de teste como testador).
         String sql = "DELETE FROM Usuario WHERE id = ?";
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -218,16 +242,18 @@ public class UsuarioDAO {
             stmt.setInt(1, id);
             rowsAffected = stmt.executeUpdate();
         } catch (SQLException e) {
-            if (e.getMessage().toLowerCase().contains("foreign key constraint") ||
-                    e.getMessage().toLowerCase().contains("referential integrity")) {
-                throw new SQLException("Não é possível excluir o usuário (ID: " + id + ") pois ele possui registros associados (ex: sessões de teste).", e);
+            // Código de erro para foreign_key_violation no PostgreSQL é 23503
+            if (e.getSQLState() != null && e.getSQLState().equals("23503")) {
+                throw new SQLException("Não é possível excluir o usuário (ID: " + id + ") pois ele possui registros associados (ex: sessões de teste).", e.getSQLState(), e);
             }
-            System.err.println("Erro ao excluir usuário: " + e.getMessage());
+            System.err.println("Erro ao excluir usuário ID " + id + ": " + e.getMessage());
             throw e;
         } finally {
-            if (stmt != null) { try { stmt.close(); } catch (SQLException e_stmt) { e_stmt.printStackTrace(); } }
+            if (stmt != null) { try { stmt.close(); } catch (SQLException e_stmt) { System.err.println("DAO: Erro ao fechar stmt em excluirUsuario: " + e_stmt.getMessage());} }
             ConexaoDB.closeConnection(conn);
         }
         return rowsAffected > 0;
     }
+
+
 }

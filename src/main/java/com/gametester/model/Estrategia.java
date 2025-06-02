@@ -12,7 +12,7 @@ public class Estrategia implements Serializable {
     private String descricao;
     private String exemplos;
     private String dicas;
-    // private List<String> imagens; // Se você for gerenciar URLs de imagem diretamente aqui
+    // private List<String> imagens;
 
     public Estrategia() {
     }

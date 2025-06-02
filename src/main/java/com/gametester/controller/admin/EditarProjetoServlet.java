@@ -13,7 +13,7 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.sql.Timestamp; // Necessário se for lidar com data de criação na atualização
+import java.sql.Timestamp; //
 
 @WebServlet("/admin/editarProjeto")
 public class EditarProjetoServlet extends HttpServlet {
@@ -107,8 +107,6 @@ public class EditarProjetoServlet extends HttpServlet {
         if (nome == null || nome.trim().isEmpty()) {
             request.setAttribute("mensagemErroFormProjeto", "O nome do projeto é obrigatório.");
 
-            // Precisamos recriar o objeto Projeto com os dados submetidos (e o ID) para repopular
-            // e também a data de criação original, pois ela não vem do formulário de edição
             Projeto projetoComErro = null;
             try {
                 projetoComErro = projetoDAO.buscarProjetoPorId(projetoId); // Busca o original para pegar a data de criação

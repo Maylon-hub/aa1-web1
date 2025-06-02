@@ -1,7 +1,9 @@
 package com.gametester.dao;
 
 import com.gametester.model.Projeto;
+import com.gametester.model.Usuario;
 import com.gametester.util.ConexaoDB;
+// import org.mindrot.jbcrypt.BCrypt; // Descomente se usar no main para testes
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,15 +16,6 @@ import java.util.List;
 
 public class ProjetoDAO {
 
-    /**
-     * Insere um novo projeto no banco de dados.
-     * A data de criação é definida automaticamente no momento da inserção.
-     * O ID e a data de criação são atualizados no objeto Projeto passado como argumento.
-     *
-     * @param projeto O objeto Projeto a ser inserido (sem ID, ou ID será ignorado).
-     * @return O objeto Projeto atualizado com o ID e data de criação definidos pelo banco.
-     * @throws SQLException Se ocorrer um erro de banco de dados.
-     */
     public Projeto inserirProjeto(Projeto projeto) throws SQLException {
         String sql = "INSERT INTO Projeto (nome, descricao, data_criacao) VALUES (?, ?, ?) RETURNING id, data_criacao";
         Connection conn = null;
@@ -31,49 +24,40 @@ public class ProjetoDAO {
 
         try {
             conn = ConexaoDB.getConnection();
-            stmt = conn.prepareStatement(sql); // Com RETURNING, não precisamos de Statement.RETURN_GENERATED_KEYS explicitamente para o PreparedStatement
+            stmt = conn.prepareStatement(sql);
 
             stmt.setString(1, projeto.getNome());
             stmt.setString(2, projeto.getDescricao());
 
             Timestamp dataCriacaoAtual = new Timestamp(System.currentTimeMillis());
             stmt.setTimestamp(3, dataCriacaoAtual);
-            // Atualiza o objeto projeto com a data de criação que será enviada ao banco
             projeto.setDataCriacao(dataCriacaoAtual);
 
-            rs = stmt.executeQuery(); // Usar executeQuery() com RETURNING para obter o ResultSet
+            rs = stmt.executeQuery();
 
             if (rs.next()) {
                 projeto.setId(rs.getInt("id"));
-                // Atualiza o objeto projeto com a data de criação exata retornada pelo banco (pode ter precisão diferente ou default do BD)
                 projeto.setDataCriacao(rs.getTimestamp("data_criacao"));
             } else {
-                // Isso seria inesperado se a inserção ocorreu e RETURNING foi usado.
                 throw new SQLException("Falha ao inserir projeto, não foi possível obter o ID ou data de criação gerados.");
             }
         } catch (SQLException e) {
             System.err.println("Erro ao inserir projeto: " + e.getMessage());
-            throw e; // Re-lança a exceção para ser tratada pela camada chamadora
+            throw e;
         } finally {
             ConexaoDB.close(rs);
             if (stmt != null) {
                 try {
                     stmt.close();
-                } catch (SQLException e) {
-                    System.err.println("Erro ao fechar PreparedStatement em inserirProjeto: " + e.getMessage());
+                } catch (SQLException e_stmt) {
+                    System.err.println("DAO: Erro ao fechar PreparedStatement em inserirProjeto: " + e_stmt.getMessage());
                 }
             }
             ConexaoDB.closeConnection(conn);
         }
-        return projeto; // Retorna o objeto projeto com ID e data de criação preenchidos
+        return projeto;
     }
 
-    /**
-     * Busca um projeto pelo seu ID.
-     * @param id O ID do projeto a ser buscado.
-     * @return O objeto Projeto encontrado, ou null se não encontrado.
-     * @throws SQLException Se ocorrer um erro de banco de dados.
-     */
     public Projeto buscarProjetoPorId(int id) throws SQLException {
         String sql = "SELECT id, nome, descricao, data_criacao FROM Projeto WHERE id = ?";
         Connection conn = null;
@@ -99,20 +83,42 @@ public class ProjetoDAO {
             throw e;
         } finally {
             ConexaoDB.close(rs);
-            if (stmt != null) { try { stmt.close(); } catch (SQLException e) { System.err.println("Erro ao fechar PreparedStatement em buscarProjetoPorId: " + e.getMessage());} }
+            if (stmt != null) { try { stmt.close(); } catch (SQLException e_stmt) { System.err.println("DAO: Erro ao fechar PreparedStatement em buscarProjetoPorId: " + e_stmt.getMessage());} }
             ConexaoDB.closeConnection(conn);
         }
         return projeto;
     }
 
-    /**
-     * Lista todos os projetos cadastrados, ordenados pelo nome.
-     * @return Uma lista de objetos Projeto.
-     * @throws SQLException Se ocorrer um erro de banco de dados.
-     */
-    public List<Projeto> listarTodosProjetos() throws SQLException {
+    public List<Projeto> listarTodosProjetos(String campoOrdenacao, String direcaoOrdenacao) throws SQLException {
         List<Projeto> projetos = new ArrayList<>();
-        String sql = "SELECT id, nome, descricao, data_criacao FROM Projeto ORDER BY nome ASC";
+
+        String campoValido;
+        switch (campoOrdenacao != null ? campoOrdenacao.toLowerCase() : "nome") {
+            case "data_criacao":
+                campoValido = "data_criacao";
+                break;
+            case "id":
+                campoValido = "id";
+                break;
+            case "nome":
+            default:
+                campoValido = "nome";
+                break;
+        }
+
+        String direcaoValida;
+        switch (direcaoOrdenacao != null ? direcaoOrdenacao.toLowerCase() : "asc") {
+            case "desc":
+                direcaoValida = "DESC";
+                break;
+            case "asc":
+            default:
+                direcaoValida = "ASC";
+                break;
+        }
+
+        String sql = "SELECT id, nome, descricao, data_criacao FROM Projeto ORDER BY " + campoValido + " " + direcaoValida + ", id " + direcaoValida;
+
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -131,26 +137,22 @@ public class ProjetoDAO {
                 projetos.add(projeto);
             }
         } catch (SQLException e) {
-            System.err.println("Erro ao listar projetos: " + e.getMessage());
+            System.err.println("Erro ao listar projetos ordenados: " + e.getMessage());
             throw e;
         } finally {
             ConexaoDB.close(rs);
-            if (stmt != null) { try { stmt.close(); } catch (SQLException e) { System.err.println("Erro ao fechar PreparedStatement em listarTodosProjetos: " + e.getMessage());} }
+            if (stmt != null) { try { stmt.close(); } catch (SQLException e_stmt) { System.err.println("DAO: Erro ao fechar stmt em listarTodosProjetos (ordenado): " + e_stmt.getMessage());} }
             ConexaoDB.closeConnection(conn);
         }
         return projetos;
     }
 
-    /**
-     * Atualiza os dados de um projeto existente no banco de dados.
-     * A data de criação não é alterada.
-     * @param projeto O objeto Projeto com os dados atualizados (deve conter o ID do projeto a ser atualizado).
-     * @return true se a atualização foi bem-sucedida (pelo menos uma linha afetada), false caso contrário.
-     * @throws SQLException Se ocorrer um erro de banco de dados.
-     */
+    public List<Projeto> listarTodosProjetos() throws SQLException {
+        return listarTodosProjetos("nome", "ASC");
+    }
+
     public boolean atualizarProjeto(Projeto projeto) throws SQLException {
         String sql = "UPDATE Projeto SET nome = ?, descricao = ? WHERE id = ?";
-        // data_criacao geralmente não é atualizada.
         Connection conn = null;
         PreparedStatement stmt = null;
         int rowsAffected = 0;
@@ -166,18 +168,12 @@ public class ProjetoDAO {
             System.err.println("Erro ao atualizar projeto com ID " + projeto.getId() + ": " + e.getMessage());
             throw e;
         } finally {
-            if (stmt != null) { try { stmt.close(); } catch (SQLException e) { System.err.println("Erro ao fechar PreparedStatement em atualizarProjeto: " + e.getMessage());} }
+            if (stmt != null) { try { stmt.close(); } catch (SQLException e_stmt) { System.err.println("DAO: Erro ao fechar PreparedStatement em atualizarProjeto: " + e_stmt.getMessage());} }
             ConexaoDB.closeConnection(conn);
         }
         return rowsAffected > 0;
     }
 
-    /**
-     * Exclui um projeto do banco de dados pelo seu ID.
-     * @param id O ID do projeto a ser excluído.
-     * @return true se a exclusão foi bem-sucedida (pelo menos uma linha afetada), false caso contrário.
-     * @throws SQLException Se ocorrer um erro de banco de dados (ex: violação de chave estrangeira se o projeto estiver em uso).
-     */
     public boolean excluirProjeto(int id) throws SQLException {
         String sql = "DELETE FROM Projeto WHERE id = ?";
         Connection conn = null;
@@ -190,14 +186,17 @@ public class ProjetoDAO {
             stmt.setInt(1, id);
             rowsAffected = stmt.executeUpdate();
         } catch (SQLException e) {
+            if (e.getSQLState() != null && e.getSQLState().equals("23503")) {
+                throw new SQLException("Não é possível excluir o projeto (ID: " + id + ") pois ele possui registros associados (ex: sessões de teste ou membros).", e.getSQLState(), e);
+            }
             System.err.println("Erro ao excluir projeto com ID " + id + ": " + e.getMessage());
             throw e;
         } finally {
             if (stmt != null) {
                 try {
                     stmt.close();
-                } catch (SQLException e) {
-                    System.err.println("Erro ao fechar PreparedStatement ao excluir projeto: " + e.getMessage());
+                } catch (SQLException e_stmt) {
+                    System.err.println("DAO: Erro ao fechar PreparedStatement ao excluir projeto: " + e_stmt.getMessage());
                 }
             }
             ConexaoDB.closeConnection(conn);
@@ -205,87 +204,134 @@ public class ProjetoDAO {
         return rowsAffected > 0;
     }
 
-    // Método main para testes rápidos do DAO (opcional)
-    public static void main(String[] args) {
-        ProjetoDAO projetoDAO = new ProjetoDAO();
-        System.out.println("--- Testando ProjetoDAO ---");
-
-        // Teste de Inserção
-        System.out.println("\n--- Tentando Inserir Projeto ---");
-        Projeto novoProjeto = new Projeto();
-        novoProjeto.setNome("Projeto Alpha de Teste DAO");
-        novoProjeto.setDescricao("Descrição do Projeto Alpha para testes via DAO.");
+    public boolean adicionarMembroAoProjeto(int projetoId, int usuarioId) throws SQLException {
+        String sql = "INSERT INTO projeto_membro (projeto_id, usuario_id) VALUES (?, ?)";
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        int rowsAffected = 0;
         try {
-            projetoDAO.inserirProjeto(novoProjeto); // O ID e dataCriacao serão preenchidos no objeto novoProjeto
-            if (novoProjeto.getId() > 0) {
-                System.out.println("Projeto inserido com sucesso! ID: " + novoProjeto.getId() + ", Nome: " + novoProjeto.getNome() + ", Criado em: " + novoProjeto.getDataCriacao());
-            } else {
-                System.out.println("Falha ao inserir projeto (ID não foi gerado).");
+            conn = ConexaoDB.getConnection();
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, projetoId);
+            stmt.setInt(2, usuarioId);
+            rowsAffected = stmt.executeUpdate();
+        } catch (SQLException e) {
+            if (e.getSQLState() != null && e.getSQLState().equals("23505")) {
+                System.err.println("Membro (ID: " + usuarioId + ") já existe no projeto (ID: " + projetoId + ").");
+                return false;
+            } else if (e.getSQLState() != null && e.getSQLState().equals("23503")) {
+                System.err.println("Erro de chave estrangeira ao adicionar membro: Projeto (ID: " + projetoId + ") ou Usuário (ID: " + usuarioId + ") não existe. " + e.getMessage());
+                throw new SQLException("Erro ao adicionar membro: Projeto ou Usuário especificado não existe.", e.getSQLState(), e);
             }
+            System.err.println("Erro ao adicionar membro ao projeto: " + e.getMessage());
+            throw e;
+        } finally {
+            if (stmt != null) { try { stmt.close(); } catch (SQLException e_stmt) { System.err.println("DAO: Erro ao fechar stmt em adicionarMembro: " + e_stmt.getMessage());} }
+            ConexaoDB.closeConnection(conn);
+        }
+        return rowsAffected > 0;
+    }
 
-            // Teste de Busca por ID (usando o ID do projeto recém-inserido)
-            if (novoProjeto.getId() > 0) {
-                System.out.println("\n--- Tentando Buscar Projeto ID: " + novoProjeto.getId() + " ---");
-                Projeto projetoBuscado = projetoDAO.buscarProjetoPorId(novoProjeto.getId());
-                if (projetoBuscado != null) {
-                    System.out.println("Projeto encontrado: " + projetoBuscado);
+    public boolean removerMembroDoProjeto(int projetoId, int usuarioId) throws SQLException {
+        String sql = "DELETE FROM projeto_membro WHERE projeto_id = ? AND usuario_id = ?";
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        int rowsAffected = 0;
+        try {
+            conn = ConexaoDB.getConnection();
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, projetoId);
+            stmt.setInt(2, usuarioId);
+            rowsAffected = stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("Erro ao remover membro (ID: " + usuarioId + ") do projeto (ID: " + projetoId + "): " + e.getMessage());
+            throw e;
+        } finally {
+            if (stmt != null) { try { stmt.close(); } catch (SQLException e_stmt) { System.err.println("DAO: Erro ao fechar stmt em removerMembro: " + e_stmt.getMessage());} }
+            ConexaoDB.closeConnection(conn);
+        }
+        return rowsAffected > 0;
+    }
 
-                    // Teste de Atualização
-                    System.out.println("\n--- Tentando Atualizar Projeto ID: " + projetoBuscado.getId() + " ---");
-                    projetoBuscado.setNome("Projeto Alpha (Atualizado via DAO)");
-                    projetoBuscado.setDescricao("Descrição atualizada do Projeto Alpha.");
-                    boolean atualizado = projetoDAO.atualizarProjeto(projetoBuscado);
-                    if (atualizado) {
-                        System.out.println("Projeto atualizado com sucesso.");
-                        Projeto projetoRebuscado = projetoDAO.buscarProjetoPorId(projetoBuscado.getId());
-                        System.out.println("Dados após atualização: " + projetoRebuscado);
-                    } else {
-                        System.out.println("Falha ao atualizar projeto.");
-                    }
-                } else {
-                    System.out.println("Projeto com ID " + novoProjeto.getId() + " não encontrado para busca.");
-                }
+    public List<Usuario> listarMembrosDoProjeto(int projetoId) throws SQLException {
+        List<Usuario> membros = new ArrayList<>();
+        String sql = "SELECT u.id, u.nome, u.email, u.tipo_perfil " +
+                "FROM Usuario u JOIN projeto_membro pm ON u.id = pm.usuario_id " +
+                "WHERE pm.projeto_id = ? ORDER BY u.nome ASC";
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        try {
+            conn = ConexaoDB.getConnection();
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, projetoId);
+            rs = stmt.executeQuery();
+            while (rs.next()) {
+                Usuario membro = new Usuario();
+                membro.setId(rs.getInt("id"));
+                membro.setNome(rs.getString("nome"));
+                membro.setEmail(rs.getString("email"));
+                membro.setTipoPerfil(rs.getString("tipo_perfil"));
+                membros.add(membro);
             }
         } catch (SQLException e) {
-            System.err.println("Erro durante o teste de inserção/busca/atualização no main: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Erro ao listar membros do projeto ID " + projetoId + ": " + e.getMessage());
+            throw e;
+        } finally {
+            ConexaoDB.close(rs);
+            if (stmt != null) { try { stmt.close(); } catch (SQLException e_stmt) { System.err.println("DAO: Erro ao fechar stmt em listarMembros: " + e_stmt.getMessage());} }
+            ConexaoDB.closeConnection(conn);
+        }
+        return membros;
+    }
+
+    public List<Projeto> listarProjetosPorMembro(int usuarioId, String campoOrdenacao, String direcaoOrdenacao) throws SQLException {
+        List<Projeto> projetos = new ArrayList<>();
+
+        String campoValido;
+        switch (campoOrdenacao != null ? campoOrdenacao.toLowerCase() : "nome") {
+            case "data_criacao": campoValido = "p.data_criacao"; break;
+            case "id": campoValido = "p.id"; break;
+            case "nome": default: campoValido = "p.nome"; break;
         }
 
-        // Teste de Listagem
-        System.out.println("\n--- Tentando Listar Todos os Projetos ---");
+        String direcaoValida;
+        switch (direcaoOrdenacao != null ? direcaoOrdenacao.toLowerCase() : "asc") {
+            case "desc": direcaoValida = "DESC"; break;
+            case "asc": default: direcaoValida = "ASC"; break;
+        }
+
+        String sql = "SELECT p.id, p.nome, p.descricao, p.data_criacao " +
+                "FROM Projeto p JOIN projeto_membro pm ON p.id = pm.projeto_id " +
+                "WHERE pm.usuario_id = ? ORDER BY " + campoValido + " " + direcaoValida + ", p.id " + direcaoValida;
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
         try {
-            List<Projeto> todosProjetos = projetoDAO.listarTodosProjetos();
-            if (todosProjetos.isEmpty()) {
-                System.out.println("Nenhum projeto encontrado.");
-            } else {
-                System.out.println("Total de projetos encontrados: " + todosProjetos.size());
-                for (Projeto p : todosProjetos) {
-                    System.out.println(p);
-                }
+            conn = ConexaoDB.getConnection();
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, usuarioId);
+            rs = stmt.executeQuery();
+            while (rs.next()) {
+                Projeto projeto = new Projeto();
+                projeto.setId(rs.getInt("id"));
+                projeto.setNome(rs.getString("nome"));
+                projeto.setDescricao(rs.getString("descricao"));
+                projeto.setDataCriacao(rs.getTimestamp("data_criacao"));
+                projetos.add(projeto);
             }
         } catch (SQLException e) {
-            System.err.println("Erro ao listar projetos no main: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Erro ao listar projetos (ordenados) para o membro ID " + usuarioId + ": " + e.getMessage());
+            throw e;
+        } finally {
+            ConexaoDB.close(rs);
+            if (stmt != null) { try { stmt.close(); } catch (SQLException e_stmt) { System.err.println("DAO: Erro ao fechar stmt em listarProjetosPorMembro (ordenado): " + e_stmt.getMessage());} }
+            ConexaoDB.closeConnection(conn);
         }
+        return projetos;
+    }
 
-        // Teste de Exclusão (use com cautela e com um ID que possa ser excluído)
-        // Lembre-se que a exclusão pode falhar se houver sessões de teste associadas a este projeto (chave estrangeira)
-        /*
-        if (novoProjeto != null && novoProjeto.getId() > 0) {
-            System.out.println("\n--- Tentando Excluir Projeto ID: " + novoProjeto.getId() + " ---");
-            try {
-                boolean excluido = projetoDAO.excluirProjeto(novoProjeto.getId());
-                if (excluido) {
-                    System.out.println("Projeto com ID " + novoProjeto.getId() + " excluído com sucesso.");
-                } else {
-                    System.out.println("Não foi possível excluir o projeto com ID " + novoProjeto.getId() + " (pode não existir ou estar em uso).");
-                }
-            } catch (SQLException e) {
-                System.err.println("Erro ao excluir projeto no main: " + e.getMessage());
-                e.printStackTrace();
-            }
-        }
-        */
-        System.out.println("\n--- Testes do ProjetoDAO Concluídos ---");
+    public List<Projeto> listarProjetosPorMembro(int usuarioId) throws SQLException {
+        return listarProjetosPorMembro(usuarioId, "nome", "ASC");
     }
 }

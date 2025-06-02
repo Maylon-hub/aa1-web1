@@ -14,7 +14,7 @@ import java.util.List;
 
 public class EstrategiaDAO {
 
-    public int inserirEstrategia(Estrategia estrategia) throws SQLException { // Add 'throws SQLException'
+    public int inserirEstrategia(Estrategia estrategia) throws SQLException {
         String sql = "INSERT INTO Estrategia (nome, descricao, exemplos, dicas) VALUES (?, ?, ?, ?) RETURNING id";
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -33,17 +33,14 @@ public class EstrategiaDAO {
                 rs = stmt.getGeneratedKeys();
                 if (rs.next()) {
                     idGerado = rs.getInt(1);
-                    estrategia.setId(idGerado); // Set the ID back to the object
+                    estrategia.setId(idGerado);
                 }
             }
         } catch (SQLException e) {
             System.err.println("Erro ao inserir estratégia: " + e.getMessage());
-            throw e; // Re-throw the exception
+            throw e;
         } finally {
             ConexaoDB.close(rs);
-            // Corrected closing of PreparedStatement:
-            // Assuming ConexaoDB.close() can handle PreparedStatement or has an overload.
-            // If not, you might need a specific ConexaoDB.closeStatement(stmt) method.
             if (stmt != null) {
                 try {
                     stmt.close();
@@ -56,9 +53,6 @@ public class EstrategiaDAO {
         return idGerado;
     }
 
-    // You should apply similar changes (throws SQLException and re-throwing)
-    // to other methods like buscarEstrategiaPorId, atualizarEstrategia, etc.
-    // For example:
     public Estrategia buscarEstrategiaPorId(int id) throws SQLException {
         String sql = "SELECT id, nome, descricao, exemplos, dicas FROM Estrategia WHERE id = ?";
         Connection conn = null;
@@ -184,8 +178,7 @@ public class EstrategiaDAO {
         }
         return estrategias;
     }
-    // ... (rest of the DAO class, main method for testing can remain as is or adapt to new throws)
-    // Note: The main method will need to handle or declare SQLException if you call these modified methods.
+
     public static void main(String[] args) {
         EstrategiaDAO estrategiaDAO = new EstrategiaDAO();
 
@@ -201,12 +194,11 @@ public class EstrategiaDAO {
             int idEstrategiaInserida = estrategiaDAO.inserirEstrategia(novaEstrategia);
             if (idEstrategiaInserida != -1) {
                 System.out.println("Estratégia inserida com sucesso! ID: " + idEstrategiaInserida);
-                // novaEstrategia.setId(idEstrategiaInserida); // ID is set inside inserirEstrategia now
             } else {
                 System.out.println("Falha ao inserir estratégia (ID -1 retornado).");
             }
 
-            // --- Teste de Busca por ID ---
+            //  Teste de Busca por ID
             if (novaEstrategia.getId() > 0) { // Check if ID was set
                 System.out.println("\n--- Teste de Busca de Estratégia por ID ---");
                 Estrategia estrategiaBuscada = estrategiaDAO.buscarEstrategiaPorId(novaEstrategia.getId());
@@ -214,7 +206,7 @@ public class EstrategiaDAO {
                     System.out.println("Estratégia encontrada: " + estrategiaBuscada.getNome());
                     System.out.println("Descrição: " + estrategiaBuscada.getDescricao());
 
-                    // --- Teste de Atualização ---
+                    //  Teste de Atualização
                     System.out.println("\n--- Teste de Atualização de Estratégia ---");
                     estrategiaBuscada.setNome("Estratégia de Empatia (Revisada DAO)");
                     estrategiaBuscada.setDicas("Dica DAO: Preste atenção nos sinais visuais e sonoros.");
@@ -234,7 +226,7 @@ public class EstrategiaDAO {
             }
 
 
-            // --- Teste de Listagem ---
+            //  Teste de Listagem
             System.out.println("\n--- Teste de Listagem de Estratégias ---");
             List<Estrategia> todasEstrategias = estrategiaDAO.listarTodasEstrategias();
             if (!todasEstrategias.isEmpty()) {
@@ -245,16 +237,6 @@ public class EstrategiaDAO {
             } else {
                 System.out.println("Nenhuma estratégia cadastrada.");
             }
-
-            // --- Teste de Exclusão (CUIDADO!) ---
-            // if (novaEstrategia.getId() > 0) {
-            //     System.out.println("\n--- Teste de Exclusão de Estratégia ---");
-            //     if (estrategiaDAO.excluirEstrategia(novaEstrategia.getId())) {
-            //         System.out.println("Estratégia com ID " + novaEstrategia.getId() + " excluída com sucesso!");
-            //     } else {
-            //         System.out.println("Falha ao excluir estratégia com ID " + novaEstrategia.getId() + " (pode estar em uso).");
-            //     }
-            // }
 
         } catch (SQLException e) {
             System.err.println("Erro no método main do DAO durante teste: " + e.getMessage());

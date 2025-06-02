@@ -2,7 +2,7 @@ package com.gametester.model;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
-// import java.util.List; // Para membros, se for uma lista de objetos Usuario
+// import java.util.List;
 
 public class Projeto implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -11,8 +11,7 @@ public class Projeto implements Serializable {
     private String nome;
     private String descricao;
     private Timestamp dataCriacao;
-    // private List<Usuario> membros; // Implementação futura para membros
-    // Ou, para simplificar inicialmente, podemos ter apenas uma lista de IDs de membros ou nenhum gerenciamento de membros nesta fase.
+    // private List<Usuario> membros;
 
     public Projeto() {
     }
@@ -57,9 +56,6 @@ public class Projeto implements Serializable {
         this.dataCriacao = dataCriacao;
     }
 
-    // Getters e setters para membros seriam adicionados depois
-    // public List<Usuario> getMembros() { return membros; }
-    // public void setMembros(List<Usuario> membros) { this.membros = membros; }
 
     @Override
     public String toString() {

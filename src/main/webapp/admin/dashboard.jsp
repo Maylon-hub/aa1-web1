@@ -72,18 +72,10 @@
             <section class="widget">
                 <h3>Sessões de Teste</h3>
                 <ul>
-                    <li><a href="#">Visualizar Todas as Sessões</a> (R9)</li>
-                    <li><a href="#">Configurações de Teste</a></li>
+                    <li><a href="${pageContext.request.contextPath}/admin/sessoes">Visualizar Todas as Sessões </a>(R9)</li>
                 </ul>
             </section>
 
-            <section class="widget">
-                <h3>Sistema</h3>
-                <ul>
-                    <li><a href="#">Logs da Aplicação</a></li>
-                    <li><a href="#">Configurações Globais</a></li>
-                </ul>
-            </section>
         </div>
     </main>
 </div>

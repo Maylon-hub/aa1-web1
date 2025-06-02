@@ -2,6 +2,7 @@ package com.gametester.controller;
 
 import com.gametester.dao.UsuarioDAO;
 import com.gametester.model.Usuario;
+import org.mindrot.jbcrypt.BCrypt; // Importe a biblioteca jBCrypt
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -26,40 +27,40 @@ public class LoginServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String email = request.getParameter("email");
-        String senha = request.getParameter("senha");
+        String senhaDigitada = request.getParameter("senha"); // Renomeado para clareza
         String mensagemErro = null;
-        Usuario usuario = null; // Declare o usuário aqui para acesso no bloco finally se necessário
+        Usuario usuario = null;
 
-        // 1. Validação básica
-        if (email == null || email.trim().isEmpty() || senha == null || senha.trim().isEmpty()) {
+        if (email == null || email.trim().isEmpty() || senhaDigitada == null || senhaDigitada.isEmpty()) {
             mensagemErro = "E-mail e senha são obrigatórios.";
         } else {
             try {
-                // 2. Autenticar Usuário
-                usuario = usuarioDAO.buscarUsuarioPorEmail(email.trim()); // Esta linha pode lançar SQLException
+                usuario = usuarioDAO.buscarUsuarioPorEmail(email.trim().toLowerCase()); // Busca email em minúsculas
 
                 if (usuario != null) {
-                    // TODO: Implementar HASHING DE SENHA AQUI!
-                    // Por enquanto, comparação direta (NÃO SEGURO PARA PRODUÇÃO)
-                    if (senha.equals(usuario.getSenha())) { // CUIDADO! Comparação direta
-                        // 3. Autenticação bem-sucedida: Criar Sessão
+                    // Comparação da senha digitada com o hash armazenado no banco
+                    if (BCrypt.checkpw(senhaDigitada, usuario.getSenha())) {
+                        // Autenticação bem-sucedida: Criar Sessão
                         HttpSession session = request.getSession();
                         session.setAttribute("usuarioLogado", usuario);
 
-                        // 4. Redirecionar com base no tipo de perfil
+                        // Redirecionar com base no tipo de perfil
                         String tipoPerfil = usuario.getTipoPerfil();
                         if ("ADMINISTRADOR".equals(tipoPerfil)) {
                             response.sendRedirect(request.getContextPath() + "/admin/dashboard.jsp");
                         } else if ("TESTADOR".equals(tipoPerfil)) {
                             response.sendRedirect(request.getContextPath() + "/testador/dashboard.jsp");
-                        } else if ("VISITANTE".equals(tipoPerfil)) {
-                            // Visitantes geralmente não fazem login para um dashboard, mas se for o caso:
-                            response.sendRedirect(request.getContextPath() + "/index.jsp"); // Ou uma página inicial para visitantes
-                        } else {
-                            mensagemErro = "Tipo de perfil não autorizado para login.";
+                        } else { // Incluindo "VISITANTE" ou qualquer outro perfil não esperado para dashboard
+                            // Visitantes normalmente não têm um dashboard após login.
+                            // Se um visitante fizer login, talvez deva ir para a página inicial.
+                            // Ou, se 'VISITANTE' como tipo de perfil não deveria fazer login, tratar como erro.
+                            mensagemErro = "Tipo de perfil não tem acesso a um painel dedicado.";
+                            // Para este caso, vamos redirecionar para a index se não for um erro de login.
+                            // Se um visitante não deve logar, a lógica de erro seria diferente.
+                            // response.sendRedirect(request.getContextPath() + "/index.jsp");
                         }
-                        // Se houve redirecionamento bem-sucedido, não processar mais nada
-                        if (response.isCommitted()) { // Verifica se o redirect já foi enviado
+
+                        if (mensagemErro == null && response.isCommitted()) { // Se não houve erro de perfil e já redirecionou
                             return;
                         }
                     } else {
@@ -71,14 +72,16 @@ public class LoginServlet extends HttpServlet {
                     mensagemErro = "E-mail ou senha inválidos.";
                 }
             } catch (SQLException e) {
-                e.printStackTrace(); // Loga o erro no console do servidor
+                e.printStackTrace();
                 mensagemErro = "Erro ao processar o login. Por favor, tente novamente mais tarde.";
-                // Opcional: você pode querer mostrar e.getMessage() se for seguro e útil para o admin,
-                // mas para o usuário final, uma mensagem genérica é melhor.
+            } catch (IllegalArgumentException e_bcrypt) {
+                // BCrypt.checkpw pode lançar IllegalArgumentException se o hash armazenado for inválido
+                e_bcrypt.printStackTrace();
+                mensagemErro = "Erro na verificação da autenticação. Contate o suporte.";
             }
         }
 
-        // 5. Falha na autenticação, validação ou erro de SQL
+        // Falha na autenticação, validação ou erro
         if (mensagemErro != null) {
             request.setAttribute("erroLogin", mensagemErro);
             request.getRequestDispatcher("login.jsp").forward(request, response);
@@ -97,6 +100,7 @@ public class LoginServlet extends HttpServlet {
             }
             response.sendRedirect(request.getContextPath() + "/login.jsp?logout=true");
         } else {
+            // Simplesmente exibe a página de login
             request.getRequestDispatcher("login.jsp").forward(request, response);
         }
     }

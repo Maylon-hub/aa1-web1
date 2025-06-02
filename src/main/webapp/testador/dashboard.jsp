@@ -59,7 +59,7 @@
             <section class="widget">
                 <h3>Minhas Atividades</h3>
                 <ul>
-                    <li><a href="${pageContext.request.contextPath}/testador/sessoes?action=novo">Cadastrar Nova Sessão de Teste</a> (R7)</li>
+                    <li><a href="${pageContext.request.contextPath}/testador/cadastrarSessao">Nova Sessão de Teste</a> (R7)</li>
                     <li><a href="${pageContext.request.contextPath}/testador/minhasSessoes">Gerenciar Minhas Sessões de Teste</a> (R8, R9)</li>
                 </ul>
             </section>
@@ -68,17 +68,20 @@
                 <h3>Recursos</h3>
                 <ul>
                     <li><a href="${pageContext.request.contextPath}/testador/meusProjetos">Visualizar Projetos Atribuídos</a> (R4)</li>
-                    <li><a href="#">Visualizar Todas as Estratégias</a> (R6)</li>
+                    <li><a href="${pageContext.request.contextPath}/estrategias">Listar Estratégias</a> (R6)</li>
+
                 </ul>
             </section>
 
             <section class="widget">
-                <h3>Meu Perfil</h3>
+                <h3>Minha Conta</h3>
                 <ul>
-                    <li><a href="#">Editar Meu Cadastro</a></li>
-                    <li><a href="#">Alterar Senha</a></li>
+                    <li><a href="${pageContext.request.contextPath}/perfil/editar">Editar Meu Cadastro</a></li>
+                    <li><a href="${pageContext.request.contextPath}/perfil/alterarSenha">Alterar Senha</a></li>
                 </ul>
             </section>
+
+
         </div>
     </main>
 </div>
