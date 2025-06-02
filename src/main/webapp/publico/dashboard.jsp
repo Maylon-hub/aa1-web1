@@ -1,3 +1,3 @@
 
 
-<jsp:include page="/WEB-INF/jsp/footerPublico.jspf" />
+<jsp:include page="/WEB-INF/jsp/footerPublico.jsp" />

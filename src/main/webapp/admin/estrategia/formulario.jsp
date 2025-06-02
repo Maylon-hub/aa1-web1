@@ -8,7 +8,7 @@
   <title>${empty estrategia.id || estrategia.id == 0 ? 'Nova' : 'Editar'} Estratégia - Admin</title>
   <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css"> <%-- Exemplo de CSS --%>
   <style>
-
+    /* Estilos básicos para formulário (coloque em um CSS externo depois) */
     body { font-family: sans-serif; margin: 20px; }
     .form-container { width: 600px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9;}
     .form-group { margin-bottom: 15px; }
@@ -20,13 +20,16 @@
   </style>
 </head>
 <body>
+<%--<jsp:include page="/admin/adminHeader.jsp" /> &lt;%&ndash; Incluir um cabeçalho comum de admin &ndash;%&gt;--%>
 
 <div class="form-container">
   <h1>${empty estrategia.id || estrategia.id == 0 ? 'Cadastrar Nova' : 'Editar'} Estratégia</h1>
 
   <form method="POST" action="${pageContext.request.contextPath}/admin/estrategias">
+    <%-- A action do servlet é 'salvar' tanto para novo quanto para editar --%>
     <input type="hidden" name="action" value="${requestScope.action}"/>
 
+    <%-- Se estiver editando, envia o ID da estratégia --%>
     <c:if test="${not empty estrategia.id && estrategia.id != 0}">
       <input type="hidden" name="id" value="${estrategia.id}"/>
     </c:if>
