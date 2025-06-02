@@ -32,7 +32,7 @@
 </div>
 
 <%-- O include do rodapé continua funcionando normalmente --%>
-<jsp:include page="/WEB-INF/jspf/footerPublico.jspf" />
+<jsp:include page="/WEB-INF/jsp/footerPublico.jsp" />
 
 </body>
 </html>
