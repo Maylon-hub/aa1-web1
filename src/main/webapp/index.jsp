@@ -79,7 +79,7 @@
         Organize seus projetos, defina estratégias e acompanhe suas sessões de teste de forma eficiente.
     </p>
     <a href="${pageContext.request.contextPath}/login.jsp" class="btn-login">Acessar o Sistema</a>
-    <a href="${pageContext.request.contextPath}/estrategias-publicas" class="btn-secondary">Ver Estratégias Públicas</a>
+    <a href="${pageContext.request.contextPath}/estrategias-publicas" class="btn-login">Ver Estratégias Públicas</a>
 </div>
 
 <div class="footer">
