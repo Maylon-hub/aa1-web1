@@ -1,18 +1,26 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib uri="jakarta.tags.core" prefix="c" %> <%-- URI correta para JSTL com Jakarta EE --%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 
-<%-- Proteção: Redireciona para login se não for admin logado --%>
+<%-- Define o bundle de mensagens que será usado nesta página --%>
+<fmt:setBundle basename="mensagens"/>
+
+<%--
+  Proteção: Redireciona para login se não for admin.
+  MUDANÇA CRÍTICA: Passamos uma CHAVE de erro ('erroChave'), não o texto completo.
+  A página de login deverá ser capaz de ler esta chave.
+--%>
 <c:if test="${empty sessionScope.usuarioLogado || sessionScope.usuarioLogado.tipoPerfil != 'ADMINISTRADOR'}">
     <c:redirect url="${pageContext.request.contextPath}/login.jsp">
-        <c:param name="erro" value="Acesso não autorizado. Faça login como administrador."/>
+        <c:param name="erroChave" value="auth.error.unauthorizedAdmin"/>
     </c:redirect>
 </c:if>
 
 <!DOCTYPE html>
-<html>
+<html lang="${not empty sessionScope.userLocale ? sessionScope.userLocale.language : 'pt-BR'}">
 <head>
     <meta charset="UTF-8">
-    <title>Cadastrar Nova Estratégia</title>
+    <title><fmt:message key="strategy.register.pageTitle"/></title>
     <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/estiloPrincipal.css">
     <style>
         /* Estilos que estavam no seu JSP de cadastro anteriormente, caso o CSS externo não cubra tudo */
@@ -34,49 +42,46 @@
 </head>
 <body>
 <div class="container">
-    <h1>Cadastrar Nova Estratégia de Teste</h1>
+    <h1><fmt:message key="strategy.register.header"/></h1>
 
+    <%--
+      Para as mensagens de sucesso/erro, o Servlet agora nos envia a CHAVE da mensagem.
+      Usamos a tag <fmt:message> para exibir o texto correspondente.
+    --%>
     <c:if test="${not empty mensagemSucesso}">
-        <p class="message success"><c:out value="${mensagemSucesso}"/></p>
+        <p class="message success"><fmt:message key="${mensagemSucesso}"/></p>
     </c:if>
     <c:if test="${not empty mensagemErro}">
-        <p class="message error"><c:out value="${mensagemErro}"/></p>
+        <p class="message error"><fmt:message key="${mensagemErro}"/></p>
     </c:if>
 
     <form action="${pageContext.request.contextPath}/admin/cadastrarEstrategia" method="post">
         <div>
-            <label for="nome">Nome da Estratégia:</label>
-            <%-- Alterado para usar o atributo individual 'valorNome' --%>
+            <label for="nome"><fmt:message key="strategy.register.label.name"/></label>
             <input type="text" id="nome" name="nome" value="<c:out value='${valorNome}'/>" required>
         </div>
         <div>
-            <label for="descricao">Descrição:</label>
-            <%-- Alterado para usar o atributo individual 'valorDescricao' --%>
+            <label for="descricao"><fmt:message key="strategy.register.label.description"/></label>
             <textarea id="descricao" name="descricao" required><c:out value='${valorDescricao}'/></textarea>
         </div>
         <div>
-            <label for="exemplos">Exemplos (opcional):</label>
-            <%-- Alterado para usar o atributo individual 'valorExemplos' --%>
+            <label for="exemplos"><fmt:message key="strategy.register.label.examples"/></label>
             <textarea id="exemplos" name="exemplos"><c:out value='${valorExemplos}'/></textarea>
         </div>
         <div>
-            <label for="dicas">Dicas (opcional):</label>
-            <%-- Alterado para usar o atributo individual 'valorDicas' --%>
+            <label for="dicas"><fmt:message key="strategy.register.label.tips"/></label>
             <textarea id="dicas" name="dicas"><c:out value='${valorDicas}'/></textarea>
         </div>
         <div>
-            <label for="imagemPath">Caminho/Nome do Arquivo da Imagem (opcional):</label>
-            <%-- Alterado para usar o atributo individual 'valorImagemPath' --%>
+            <label for="imagemPath"><fmt:message key="strategy.register.label.imagePath"/></label>
             <input type="text" id="imagemPath" name="imagemPath" value="<c:out value='${valorImagemPath}'/>">
-            <%-- Para upload de imagem real, o input seria type="file" e o servlet precisaria de tratamento para multipart/form-data. --%>
-            <%-- Por agora, o admin digita o nome do arquivo que ele colocaria em uma pasta específica. --%>
         </div>
-        <button type="submit">Cadastrar Estratégia</button>
+        <button type="submit"><fmt:message key="strategy.register.button.submit"/></button>
     </form>
 
     <div class="navigation-links">
-        <a href="${pageContext.request.contextPath}/admin/dashboard.jsp">Voltar ao Dashboard</a>
-        <a href="${pageContext.request.contextPath}/estrategias">Ver Lista de Estratégias</a>
+        <a href="${pageContext.request.contextPath}/admin/dashboard.jsp"><fmt:message key="strategy.register.link.backToDashboard"/></a>
+        <a href="${pageContext.request.contextPath}/estrategias"><fmt:message key="strategy.register.link.viewList"/></a>
     </div>
 </div>
 </body>
